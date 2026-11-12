@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subwise</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2048%2048%22%3E%20%20%3Crect%20width%3D%2248%22%20height%3D%2248%22%20rx%3D%2213%22%20fill%3D%22%230B7A62%22/%3E%20%20%3Cpath%20d%3D%22M11%2019%209.5%208.5%2018.5%2013.6Q24%2011.8%2029.5%2013.6L38.5%208.5%2037%2019Q41%2025.5%2038.4%2032.6%2034.6%2041%2024%2041%2013.4%2041%209.6%2032.6%207%2025.5%2011%2019Z%22%20fill%3D%22%23E9F7F2%22/%3E%20%20%3Ccircle%20cx%3D%2217.4%22%20cy%3D%2225%22%20r%3D%226.6%22%20fill%3D%22%230F221C%22/%3E%20%20%3Ccircle%20cx%3D%2230.6%22%20cy%3D%2225%22%20r%3D%226.6%22%20fill%3D%22%230F221C%22/%3E%20%20%3Cpath%20d%3D%22M20.8%2025A3.4%203.4%200%201%201%2017.6%2021.6%22%20fill%3D%22none%22%20stroke%3D%22%23E9F7F2%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22/%3E%20%20%3Cpath%20d%3D%22M16.9%2019.9%2019.6%2021.6%2016.9%2023.3Z%22%20fill%3D%22%23E9F7F2%22/%3E%20%20%3Ccircle%20cx%3D%2230.6%22%20cy%3D%2225%22%20r%3D%223.1%22%20fill%3D%22%23F0A63A%22/%3E%20%20%3Cpath%20d%3D%22M24%2030.2%2026.1%2033%2024%2035.6%2021.9%2033Z%22%20fill%3D%22%23F0A63A%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  /* Subwise: a calm ledger. Jade accent for "you're in control", amber blip for things coming up. Sidebar + work area. */
+  --bg:#F2F5F3;--surface:#FFFFFF;--ink:#13201B;--muted:#5D6A65;--line:#DCE3DF;--soft:#EEF3F1;
+  --accent:#0B7A62;--accent-ink:#FFFFFF;--accent-soft:#E1F1EC;--accent-2:#F0A63A;
+  --side:#0F221C;--side-ink:#D7E6E0;--side-muted:#86A096;--side-on:#1C3A31;
+  --ok:#1D8A57;--warn:#A86500;--crit:#C33A2C;--info:#2C63C4;
+  --ok-bg:#E4F4EB;--warn-bg:#FCF0DC;--crit-bg:#FBE6E3;--info-bg:#E5EDFB;
+  --display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;--body:'Figtree',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --r:12px;--shadow:0 1px 2px rgba(16,34,28,.06),0 4px 16px rgba(16,34,28,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1210;--surface:#121C19;--ink:#E4EDE9;--muted:#93A39C;--line:#22312C;--soft:#17231F;
+  --accent:#3CC29E;--accent-ink:#06231B;--accent-soft:#12302A;--accent-2:#F3B34F;
+  --side:#070E0C;--side-ink:#D2E2DB;--side-muted:#7B958B;--side-on:#16302A;
+  --ok:#4CC88A;--warn:#E8A93F;--crit:#F07565;--info:#7FA6F0;
+  --ok-bg:#12291E;--warn-bg:#2E2412;--crit-bg:#331815;--info-bg:#152238;--shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0B1210;--surface:#121C19;--ink:#E4EDE9;--muted:#93A39C;--line:#22312C;--soft:#17231F;
+  --accent:#3CC29E;--accent-ink:#06231B;--accent-soft:#12302A;--accent-2:#F3B34F;
+  --side:#070E0C;--side-ink:#D2E2DB;--side-muted:#7B958B;--side-on:#16302A;
+  --ok:#4CC88A;--warn:#E8A93F;--crit:#F07565;--info:#7FA6F0;
+  --ok-bg:#12291E;--warn-bg:#2E2412;--crit-bg:#331815;--info-bg:#152238;--shadow:0 1px 2px rgba(0,0,0,.3);color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:24px}h2{font-size:16px}h3{font-size:14px}
+a{color:var(--accent)}button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num,.kpi strong,.chip,.bv,.idea-amt,.dr-price,.hist b{font-variant-numeric:tabular-nums}
+.ic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.muted{color:var(--muted)}.small{font-size:13px}.grow{flex:1}.pad{padding:16px}.pad-t{padding-top:12px}.pad-x{padding:0 16px 14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.stack{display:grid;gap:12px}.stack p{margin:0}
+#app{display:grid;grid-template-columns:248px 1fr;min-height:100%}
+/* sidebar */
+.side{background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;padding:18px 12px;position:sticky;top:0;height:100vh;height:100dvh}
+.brand{display:flex;align-items:center;gap:10px;color:var(--side-ink);text-decoration:none;font:700 21px var(--display);padding:4px 10px 18px}
+.logo{width:34px;height:34px;flex:none}.brand em{font-style:normal;color:#7FD9BF}
+.side nav{display:grid;gap:2px}
+.side nav a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:var(--side-muted);text-decoration:none;font-weight:500}
+.side nav a:hover{color:var(--side-ink);background:rgba(255,255,255,.04)}
+.side nav a.on{background:var(--side-on);color:#fff}
+.side nav a.on .ic{color:#7FD9BF}
+.count{margin-left:auto;background:var(--accent-2);color:#2A1A00;font-size:12px;border-radius:99px;padding:0 7px;line-height:20px}
+.side-foot{margin-top:auto;font-size:12.5px;color:var(--side-muted);padding:10px;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--side-muted);display:inline-block}.dot.ok{background:#4CC88A}.dot.warn{background:var(--accent-2)}
+/* main */
+.main{min-width:0;padding:0 28px 40px}
+.top{display:flex;align-items:center;gap:14px;padding:20px 0 16px;position:sticky;top:0;background:var(--bg);z-index:5}
+.top-actions{margin-left:auto;display:flex;gap:8px}
+.menu{display:none}
+.view{display:grid;gap:18px}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 14px;font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}.btn.primary:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent}.btn.danger{color:var(--crit)}.btn.danger:not(.ghost){background:var(--crit);color:#fff;border-color:var(--crit)}
+.btn.small{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.55;cursor:default}
+.numbtn{background:none;border:1px dashed transparent;border-radius:7px;padding:2px 6px;margin:-2px -6px;font:inherit;font-weight:600;color:inherit;cursor:pointer;text-align:inherit}
+.numbtn:hover,.numbtn:focus-visible{border-color:var(--accent);background:var(--accent-soft)}.numbtn.plain{font-weight:400}
+.numbtn.big{display:inline-flex;align-items:center;gap:6px;margin:0;padding:0 6px}.numbtn .pen{width:16px;height:16px;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-weight:600;font-size:13px}
+.iconbtn{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:transparent;cursor:pointer;color:var(--muted)}
+.iconbtn:hover{background:var(--soft);color:var(--ink)}
+.banner{border-radius:var(--r);padding:12px 16px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.banner.demo{background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.banner.warn{background:var(--warn-bg);color:var(--warn)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 10px}
+.card-h a{font-size:13px;font-weight:600;text-decoration:none}
+.note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.note code{background:var(--soft);padding:1px 5px;border-radius:5px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+/* KPIs */
+.kpis{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:14px}.kpis.three{grid-template-columns:repeat(3,1fr)}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:2px;box-shadow:var(--shadow)}
+.kpi label{font-size:13px;color:var(--muted);font-weight:500}
+.kpi strong{font:700 28px/1.15 var(--display);letter-spacing:-.02em}.kpi strong span{font-size:15px;color:var(--muted);font-weight:500;margin-left:2px}
+.kpi small{color:var(--muted);font-size:12.5px}
+.kpi.hero{background:var(--side);color:#fff;border-color:var(--side)}.kpi.hero label,.kpi.hero small{color:var(--side-muted)}.kpi.hero strong{font-size:34px}
+.kpi.save strong{color:var(--ok)}
+/* alerts */
+.alerts{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.alerts.compact{padding:0 12px 14px;gap:6px}
+.alert{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:10px;padding:11px 14px;cursor:pointer}
+.alerts.compact .alert{grid-template-columns:auto 1fr;padding:9px 12px;box-shadow:none}
+.alert b{display:block;font-weight:600}.alert p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+.alert .sev{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:6px;margin-top:2px}
+.sev-critical{border-left-color:var(--crit)}.sev-critical .sev{background:var(--crit-bg);color:var(--crit)}
+.sev-high{border-left-color:var(--warn)}.sev-high .sev{background:var(--warn-bg);color:var(--warn)}
+.sev-medium{border-left-color:var(--info)}.sev-medium .sev{background:var(--info-bg);color:var(--info)}
+.sev-low{border-left-color:var(--line)}.sev-low .sev{background:var(--soft);color:var(--muted)}
+.atype{font-size:12px;color:var(--muted)}.a-act{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+/* timeline */
+.timeline{list-style:none;margin:0;padding:0 8px 12px}
+.tl{display:grid;grid-template-columns:44px 14px 1fr auto;gap:10px;align-items:center;padding:7px 8px;border-radius:9px;cursor:pointer}
+.tl:hover{background:var(--soft)}
+.tl-date{display:grid;text-align:center;font-size:11px;color:var(--muted);line-height:1.1;text-transform:uppercase}.tl-date b{font:700 18px var(--display);color:var(--ink)}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.tl.deadline .tl-dot,.ce.deadline,.lg.deadline::before,.mini-ev .deadline b{background:var(--crit)}
+.tl.trial .tl-dot,.ce.trial,.lg.trial::before{background:var(--accent-2)}
+.tl.renewal .tl-dot,.ce.renewal,.lg.renewal::before{background:var(--info)}
+.tl.ends .tl-dot,.ce.ends,.lg.ends::before{background:var(--muted)}
+.tl-main b{display:block;font-weight:600}.tl-main small{color:var(--muted)}
+.tl-in{font-size:12.5px;color:var(--muted)}
+/* bars */
+.bars{list-style:none;margin:0;padding:0 16px 16px;display:grid;gap:9px}
+.bars li{display:grid;grid-template-columns:minmax(110px,170px) 1fr 84px 38px;gap:10px;align-items:center;font-size:13.5px}
+.bars li[data-act]{cursor:pointer}
+.bl{display:flex;gap:8px;align-items:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sw{width:9px;height:9px;border-radius:3px;background:hsl(var(--h) 55% 50%);flex:none}
+.bt{height:10px;background:var(--soft);border-radius:99px;overflow:hidden}.bt i{display:block;height:100%;border-radius:99px;background:hsl(var(--h) 52% 48%)}
+.bv{text-align:right;font-weight:600}.bp{text-align:right;color:var(--muted);font-size:12px}
+.proj{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;height:190px;padding:6px 16px 0;align-items:end}
+.pcol{display:grid;grid-template-rows:auto 1fr auto;height:100%;align-items:end;text-align:center;gap:4px}
+.pcol i{display:block;background:var(--accent);border-radius:6px 6px 2px 2px;min-height:3px;align-self:end}.pcol i.part{background:color-mix(in srgb,var(--accent) 45%,transparent)}
+.pcol .pv{font-size:10.5px;color:var(--muted)}.pcol .pm{font-size:11.5px;color:var(--muted)}
+.card .note{padding:0 16px 14px}
+/* ideas */
+.ideas{list-style:none;margin:0;padding:0 16px 14px;display:grid}
+.ideas li{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}
+.ideas li:first-child{border-top:0}
+.idea-amt{font:700 18px var(--display);color:var(--ok)}.idea-amt small{font:500 12px var(--body);color:var(--muted)}
+.ideas b{font-weight:600}.ideas p{margin:1px 0 0;color:var(--muted);font-size:13.5px}
+/* toolbar + table */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:0 10px;flex:1;min-width:200px;max-width:340px}
+.search input:not([type=checkbox]){border:0;background:transparent;padding:9px 0;width:100%;outline:none;border-radius:0}
+select,input:not([type=checkbox]),textarea{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+.toolbar select{width:auto}
+textarea{resize:vertical}
+.tb-sum{margin-left:auto;color:var(--muted);font-size:13px}
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card .table-wrap{border:0;box-shadow:none;border-radius:0}
+table.list{width:100%;border-collapse:collapse;font-size:14px}
+.list th{text-align:left;font-size:12px;font-weight:600;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.list td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.list tbody tr{cursor:pointer}.list tbody tr:hover{background:var(--soft)}.list tbody tr:last-child td{border-bottom:0}
+.list .num{text-align:right;white-space:nowrap}.list td.num small{display:block;color:var(--muted);font-size:12px}
+.list.tight td{padding:8px 12px}
+.who{display:flex;align-items:center;gap:10px}.who b{font-weight:600;display:block}.who small{color:var(--muted);font-size:12.5px}
+.av{width:34px;height:34px;border-radius:10px;display:inline-grid;place-items:center;font:700 15px var(--display);background:hsl(var(--h) 60% 92%);color:hsl(var(--h) 55% 30%);flex:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .av{background:hsl(var(--h) 35% 20%);color:hsl(var(--h) 60% 78%)}}
+:root[data-theme="dark"] .av{background:hsl(var(--h) 35% 20%);color:hsl(var(--h) 60% 78%)}
+.av.lg{width:48px;height:48px;font-size:21px;border-radius:13px}
+.cat{font-size:12.5px;white-space:nowrap}.cat::before{content:'';display:inline-block;width:8px;height:8px;border-radius:2px;background:hsl(var(--h) 55% 50%);margin-right:6px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;white-space:nowrap;margin-right:4px}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}.pill.info{background:var(--info-bg);color:var(--info)}.pill.warn{background:var(--warn-bg);color:var(--warn)}.pill.crit{background:var(--crit-bg);color:var(--crit)}.pill.muted{background:var(--soft);color:var(--muted)}
+.pill.ghosty{background:transparent;border:1px dashed var(--line)}.pill.save-p{background:var(--ok-bg);color:var(--ok)}
+.chip{display:inline-flex;gap:6px;align-items:baseline;font-size:13px;white-space:nowrap}.chip em{font-style:normal;font-size:11.5px;padding:1px 6px;border-radius:6px}
+.chip.crit em{background:var(--crit-bg);color:var(--crit)}.chip.warn em{background:var(--warn-bg);color:var(--warn)}.chip.calm em{background:var(--soft);color:var(--muted)}.chip.muted{color:var(--muted)}.chip.muted em{background:var(--soft)}
+.up{color:var(--crit);font-weight:600}.down{color:var(--ok);font-weight:600}
+/* drawer */
+#drawer{position:fixed;inset:0 0 0 auto;width:min(480px,100%);transform:translateX(105%);transition:transform .22s ease;z-index:30;background:var(--surface);border-left:1px solid var(--line);box-shadow:-10px 0 40px rgba(0,0,0,.12);overflow-y:auto}
+#drawer.open{transform:none}
+.dr{padding:20px 22px 0;display:grid;gap:14px}
+.dr-h{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.dr-h h2{font-size:20px}.dr-h p{margin:2px 0 0;color:var(--muted);font-size:13.5px}
+.dr-price{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;color:var(--muted)}.dr-price strong{font:700 28px var(--display);color:var(--ink)}.dr-price em{font-style:normal}
+.dr-price .sep{width:1px;height:16px;background:var(--line)}
+.deadline-box{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--soft);border-radius:var(--r);padding:12px 14px}
+.deadline-box label{display:block;font-size:12px;color:var(--muted)}.deadline-box b{font:700 17px var(--display)}.deadline-box small{display:block;color:var(--muted)}
+.note-box{border-radius:10px;padding:10px 12px;font-size:13.5px}.note-box.warn{background:var(--warn-bg);color:var(--warn)}.note-box.ok{background:var(--ok-bg);color:var(--ok)}.note-box.info{background:var(--info-bg);color:var(--info)}
+.dr h3{display:flex;justify-content:space-between;align-items:center;margin-top:4px}
+.mini-ev,.hist,.docs-mini{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13.5px}
+.mini-ev li{display:grid;grid-template-columns:110px 1fr auto;gap:8px;align-items:center}
+.mini-ev b{font-weight:600;justify-self:start;padding:1px 8px;border-radius:6px;background:var(--accent);color:var(--accent-ink);font-size:12px}
+.mini-ev .trial b{background:var(--accent-2);color:#2A1A00}.mini-ev .renewal b{background:var(--info);color:#fff}.mini-ev .deadline b{color:#fff}.mini-ev .ends b{background:var(--muted)}
+.mini-ev em{font-style:normal;color:var(--muted);font-size:12.5px}
+.facts{display:grid;grid-template-columns:150px 1fr;gap:7px 12px;margin:0;font-size:14px}.facts dt{color:var(--muted)}.facts dd{margin:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.seg button{border:0;background:transparent;padding:3px 9px;font-size:12.5px;cursor:pointer}.seg button+button{border-left:1px solid var(--line)}.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.notes{background:var(--soft);padding:10px 12px;border-radius:10px;margin:0;font-size:13.5px}
+.hist li{display:grid;grid-template-columns:110px 90px auto;gap:8px}.hist em{font-style:normal;font-size:12.5px}.hist em.up{color:var(--crit)}.hist em.down{color:var(--ok)}
+.docs-mini a{display:inline-flex;gap:6px;align-items:center;text-decoration:none}
+.dr-foot{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;gap:8px;padding:12px 0 16px;margin-top:6px}
+/* forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}.form-grid.one{grid-template-columns:1fr;padding:0 16px 16px}
+.field{display:grid;gap:4px;align-content:start}.field.full{grid-column:1/-1}.field label{font-size:13px;font-weight:600}.field label i{color:var(--crit);font-style:normal}.field small{color:var(--muted);font-size:12px}
+.pair{display:flex;gap:8px;align-items:center}.pair input{max-width:110px}.pair span{color:var(--muted);font-size:13px;white-space:nowrap}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}.check input{width:16px;height:16px;accent-color:var(--accent)}
+.fx{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+/* modal */
+.modal-wrap{position:fixed;inset:0;background:rgba(8,18,14,.45);display:grid;place-items:center;z-index:40;padding:16px}
+.modal{background:var(--surface);border-radius:14px;width:min(560px,100%);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);min-width:0;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal.wide{width:min(940px,100%)}
+.m-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}.m-h h2{font-size:19px}
+.m-b{padding:8px 20px 16px;overflow-y:auto;min-height:0;min-width:0;display:grid;gap:14px}.m-b p{margin:0}
+.m-f{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:12px 20px 16px;border-top:1px solid var(--line)}
+/* calendar */
+.grid-cal{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:18px;align-items:start}
+.cal-h{justify-content:flex-start}.cal-h h2{min-width:150px;text-align:center}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:0 16px 10px;font-size:12.5px;color:var(--muted)}
+.lg::before{content:'';display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;background:var(--accent)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--line)}
+.cw{font-size:12px;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.cd{min-height:96px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cd:nth-child(7n){border-right:0}.cd.past{background:color-mix(in srgb,var(--soft) 60%,transparent)}.cd.past .dn{opacity:.55}
+.dn{font-size:12px;font-weight:600;padding:2px 4px}.cd.today .dn{background:var(--accent);color:var(--accent-ink);border-radius:6px;align-self:flex-start}
+.ce{border:0;text-align:left;font-size:11.5px;padding:2px 6px;border-radius:5px;color:#fff;background:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;width:100%}
+.ce.payment{background:var(--accent-soft);color:var(--ink)}.ce.trial{color:#2A1A00}
+.lg.payment::before{background:var(--accent-soft);border:1px solid var(--accent)}
+.more{font-size:11px;color:var(--muted);padding-left:4px}
+.dl-list{list-style:none;margin:0;padding:0 12px;display:grid;gap:2px}
+.dl-list li{display:grid;grid-template-columns:118px 1fr auto;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line)}
+.dl-m{cursor:pointer}.dl-m b{display:block;font-weight:600;font-size:14px}.dl-m small{color:var(--muted);font-size:12.5px}
+.grid-cal .row{padding-left:16px;padding-right:16px}
+/* notifications */
+.grid-note{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}.grid-note>div{display:grid;gap:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.tchip{font-size:12.5px;padding:3px 9px;border-radius:99px;background:var(--surface);border:1px solid var(--line)}.tchip b{margin-left:3px}
+/* reader */
+.grid-reader{display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px;align-items:start}.grid-reader .col{display:grid;gap:12px}
+.drop{display:grid;justify-items:center;text-align:center;gap:6px;padding:22px 16px;border:2px dashed color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:var(--r);background:var(--accent-soft);cursor:pointer}
+.drop.over{background:color-mix(in srgb,var(--accent) 18%,var(--surface))}.drop .ic{width:28px;height:28px;color:var(--accent)}.drop span{font-size:13px;color:var(--muted)}.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.warn-t{color:var(--warn)}
+.doclist{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.doclist li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.doclist li:hover{background:var(--surface)}.doclist li.on{background:var(--surface);border-color:var(--line);box-shadow:var(--shadow)}
+.doclist b{display:block;font-weight:600;font-size:13.5px;word-break:break-all}.doclist small{color:var(--muted);font-size:12px}
+.dic{width:32px;height:32px;border-radius:8px;background:var(--soft);display:grid;place-items:center;color:var(--muted)}
+.doc-panel{padding:0 0 6px}
+.dp-h{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 18px 6px}.dp-h h2{font-size:18px;word-break:break-all}.dp-h p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:4px;padding:0 14px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:10px 10px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+.tabbody{padding:16px 18px;display:grid;gap:18px}
+.sum-block{display:grid;gap:8px}.lead{font-size:16.5px;line-height:1.55;margin:0;max-width:68ch}
+.terms{display:grid;grid-template-columns:minmax(140px,220px) 1fr;margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.terms dt,.terms dd{margin:0;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px}.terms dt{background:var(--soft);color:var(--muted)}.terms dt:nth-last-child(2),.terms dd:last-child{border-bottom:0}
+.plain{margin:0;padding-left:18px;display:grid;gap:6px;max-width:70ch}
+.risks{list-style:none;margin:0;padding:0;display:grid;gap:8px}.risks li{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:start;padding:10px 12px;border-radius:10px;background:var(--soft)}
+.risks b{font-weight:600}.risks p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}.risks .pill{text-transform:capitalize;text-align:center}
+.doctext{white-space:pre-wrap;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);padding:14px;border-radius:10px;max-height:520px;overflow:auto;margin:0}
+.chat{display:grid;gap:10px;max-height:440px;overflow-y:auto}
+.msg{padding:10px 13px;border-radius:12px;max-width:85%;font-size:14.5px}.msg.user{background:var(--accent);color:var(--accent-ink);justify-self:end;border-bottom-right-radius:4px}.msg.assistant{background:var(--soft);border-bottom-left-radius:4px}
+.msg .li{display:block;padding-left:12px;position:relative}.msg .li::before{content:'•';position:absolute;left:0}
+.sugg{display:flex;gap:6px;flex-wrap:wrap}
+.ask{display:flex;gap:8px}
+/* cancel */
+.kanban{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
+.kanban section{background:var(--soft);border-radius:var(--r);padding:12px;border:1px solid var(--line)}
+.kanban h2{font-size:14px;display:flex;justify-content:space-between;margin-bottom:10px}.kanban h2 b{color:var(--muted);font-weight:600}
+.kanban ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.kc{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 10px;cursor:pointer}
+.kc:hover{border-color:var(--accent)}.kc b{display:block;font-size:13.5px;font-weight:600}.kc small{display:block;color:var(--muted);font-size:12px}.kc.done{opacity:.7}
+.kanban li.muted{font-size:13px;padding:6px 4px}
+.cx-top{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.cx-top b{display:block}.cx-top small{color:var(--muted)}
+.cx-end{display:grid;text-align:right;font-size:13px;color:var(--muted)}.cx-end b{color:var(--ink)}
+.steps{display:flex;gap:0;list-style:none;margin:0;padding:0;counter-reset:s}
+.steps li{flex:1;counter-increment:s;font-size:13px;font-weight:600;color:var(--muted);padding:8px 0 0;border-top:3px solid var(--line)}
+.steps li::before{content:counter(s)'. '}.steps li.on{color:var(--ink);border-top-color:var(--accent-2)}.steps li.done{color:var(--ok);border-top-color:var(--ok)}
+.cx-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+.letter{display:grid;gap:10px;align-content:start}.letter textarea{font-size:14px;line-height:1.55}
+.cx-track{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px}.cx-track p{margin:0}
+.track-row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.track-row .field{min-width:150px}
+/* insights */
+.ovl{padding:0 16px 12px}.ovl h3{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}.ovl h3 span{font:500 12.5px var(--body);color:var(--muted)}
+.ovl ul{list-style:none;margin:0;padding:0;display:grid;gap:4px}.ovl li{display:flex;align-items:center;gap:10px;padding:6px;border-radius:8px;cursor:pointer;font-size:14px}.ovl li:hover{background:var(--soft)}.ovl .av{width:28px;height:28px;font-size:13px}
+/* editing */
+.live{display:flex;gap:10px 28px;flex-wrap:wrap;padding:12px 16px;background:var(--accent-soft);border-radius:var(--r);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
+.live div{display:grid}.live label{font-size:12px;color:var(--muted)}.live b{font:700 18px var(--display);font-variant-numeric:tabular-nums}.live .ok-t{color:var(--ok)}.live .scope{margin-left:auto;padding-left:16px;border-left:1px solid var(--line)}
+table.grid td{padding:5px 6px}.modal table.grid thead th{position:sticky;top:0;background:var(--surface);z-index:1}table.grid th{padding:8px 6px}table.grid tbody tr{cursor:default}
+table.grid input,table.grid select{padding:5px 7px;font-size:13.5px;border-radius:7px;width:auto}
+table.grid .gname{min-width:190px}table.grid .gnum{width:96px;text-align:right}table.grid .gsmall{width:58px}table.grid input[type=date]{width:138px}
+table.grid input:disabled{opacity:.4}
+.modal.xl{width:min(1500px,100%)}
+.seg.big button{padding:7px 12px;font-size:13.5px;font-weight:600}
+.editbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.click{cursor:pointer;transition:border-color .15s,transform .15s}.click:hover{border-color:var(--accent)}.kpi.hero.click:hover{outline:2px solid var(--accent);outline-offset:-2px}
+.bars li[data-act]:hover .bl{color:var(--accent)}.pcol{cursor:pointer}.pcol:hover i{filter:brightness(1.15)}
+.hedit{list-style:none;margin:0;padding:0;display:grid;gap:6px}.hrow{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center}
+.boot{grid-column:1/-1;max-width:520px;margin:15vh auto;padding:24px;text-align:center;color:var(--muted)}.boot b{color:var(--ink);font-size:18px}
+.greet h2{font-size:22px}.greet p{margin:4px 0 0;color:var(--muted)}.greet b{color:var(--ink)}
+/* misc */
+.empty{display:grid;justify-items:center;gap:10px;text-align:center;padding:40px 16px;color:var(--muted)}.empty p{margin:0;max-width:52ch}
+.empty.big{padding:70px 16px}.empty.big .logo{width:72px;height:72px}.empty.big h2{font-size:24px;color:var(--ink)}
+.spinner{width:26px;height:26px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:grid;gap:8px;z-index:60;width:min(440px,calc(100% - 32px))}
+.toast{background:var(--side);color:#fff;padding:11px 16px;border-radius:10px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.25)}.toast.error{background:var(--crit)}
+textarea.mono{font:12px ui-monospace,monospace}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:.01ms!important}}
+@media (max-width:1180px){.kpis{grid-template-columns:1fr 1fr}.kanban{grid-template-columns:1fr 1fr}.grid-note{grid-template-columns:1fr}}
+@media (max-width:980px){.grid2,.grid-cal,.grid-reader,.cx-grid{grid-template-columns:1fr}}
+@media (max-width:900px){
+  #app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:260px;z-index:35;transform:translateX(-102%);transition:transform .2s}.side.show{transform:none;box-shadow:10px 0 40px rgba(0,0,0,.3)}
+  .menu{display:inline-grid}.main{padding:0 16px 32px}.top h1{font-size:20px}.top-actions .btn span{display:none}
+}
+@media (max-width:560px){
+  .kpis,.kpis.three,.kanban,.form-grid,.fx{grid-template-columns:1fr}
+  .bars li{grid-template-columns:100px 1fr 74px}.bars .bp{display:none}
+  .ideas li{grid-template-columns:1fr}.facts{grid-template-columns:1fr}.facts dt{margin-top:4px}
+  .cd{min-height:64px}.ce{font-size:0;height:6px;padding:0}.list th:nth-child(2),.list td:nth-child(2),.list th:nth-child(4),.list td:nth-child(4){display:none}
+  .alert{grid-template-columns:1fr}.terms{grid-template-columns:1fr}.risks li{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="boot"><p><b>Subwise is starting…</b></p><p>If this message doesn’t go away, this viewer can’t run apps. Open the file in a web browser such as Chrome, Safari, Firefox or Edge.</p></div></div>
+<noscript><p class="boot">Subwise needs JavaScript. Turn it on, or open this file in a web browser such as Chrome, Safari, Firefox or Edge.</p></noscript>
+<div id="drawer" aria-hidden="true"></div>
+<div id="modals"></div>
+<div id="toasts" aria-live="polite"></div>
+<script>
+// ===== Subwise core: pure date, money and insight logic =====
+const CYCLES={weekly:{label:'Weekly',perYear:52,months:12/52},monthly:{label:'Monthly',perYear:12,months:1},quarterly:{label:'Quarterly',perYear:4,months:3},'half-yearly':{label:'Every 6 months',perYear:2,months:6},yearly:{label:'Yearly',perYear:1,months:12}};
+const CATEGORIES=['Streaming','Music','Gaming','Books & audio','News & magazines','Cloud & software','Fitness','Housing','Utilities','Internet & phone','Insurance','Shopping','Transport','Finance','Other'];
+const OVERLAP_CATS=['Streaming','Music','Cloud & software','Books & audio','News & magazines','Gaming'];
+const COMPARE_CATS=['Utilities','Internet & phone','Insurance'];
+const STATUS={active:'Active',trial:'Free trial',cancelling:'Cancelling',paused:'Paused',cancelled:'Cancelled'};
+
+function isoOf(d){const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,10);}
+function parseD(s){if(!s)return null;const mt=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(String(s));if(!mt)return null;const y=+mt[1],m=+mt[2],d=+mt[3];if(m<1||m>12||d<1||d>31)return null;return new Date(y,m-1,d);}
+const okD=s=>!!parseD(s);
+let TODAY_OVERRIDE=null;
+function today(){return TODAY_OVERRIDE||isoOf(new Date());}
+function addDays(s,n){const d=parseD(s);if(!d)return s;d.setDate(d.getDate()+n);return isoOf(d);}
+function addMonths(s,n){const d=parseD(s);if(!d)return s;const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+n);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return isoOf(d);}
+function daysUntil(s){if(!okD(s))return null;return Math.round((parseD(s)-parseD(today()))/864e5);}
+function addCycle(s,cycle,k=1){if(cycle==='weekly')return addDays(s,7*k);return addMonths(s,(CYCLES[cycle]||CYCLES.monthly).months*k);}
+function minusNotice(s,v,u){if(!okD(s))return null;v=+v||0;if(!v)return s;if(u==='months')return addMonths(s,-v);if(u==='weeks')return addDays(s,-7*v);return addDays(s,-v);}
+function plusNotice(s,v,u){if(!okD(s))s=today();v=+v||0;if(u==='months')return addMonths(s,v);if(u==='weeks')return addDays(s,7*v);return addDays(s,v);}
+function noticeText(i){const v=+i.noticeValue||0;if(!v)return 'None';const u=i.noticeUnit||'days';return v+' '+(v===1?u.replace(/s$/,''):u);}
+
+function toBase(v,cur,S){const fx=S.fx||{};const b=S.baseCurrency||'EUR';return (+v||0)*(fx[cur]||1)/(fx[b]||1);}
+function isLive(i){return ['active','trial','cancelling'].includes(i.status);}
+function monthlyEq(i,S){return toBase(i.price,i.currency,S)*(CYCLES[i.cycle]||CYCLES.monthly).perYear/12;}
+function yearlyEq(i,S){return monthlyEq(i,S)*12;}
+// counted in totals: active + cancelling (until it ends). Trials count as upcoming, not current spend.
+function counts(i){if(i.status==='cancelling'){const e=i.cancellation&&i.cancellation.endsAt;return !e||daysUntil(e)>=0;}return i.status==='active';}
+
+// next payment on or after today (rolls past dates forward, assuming they were paid)
+function nextPay(i){let d=i.nextPayment;if(!okD(d))return null;let n=0;while(daysUntil(d)<0&&n<600){d=addCycle(d,i.cycle);n++;}
+  if(i.status==='cancelling'&&i.cancellation&&i.cancellation.endsAt&&d>i.cancellation.endsAt)return null;
+  if(i.status==='cancelled'||i.status==='paused')return null;return d;}
+
+// When does the item next renew / extend for a fixed period? null = runs indefinitely or no renewal.
+function renewalDate(i){
+  if(!isLive(i)||i.status==='cancelling')return null;
+  if(i.status==='trial')return okD(i.trialEnds)?i.trialEnds:nextPay(i);
+  if(okD(i.minTermEnd)){let end=i.minTermEnd;if(daysUntil(end)>=0)return end;
+    if(i.autoRenew&&+i.renewalMonths>1){let n=0;while(daysUntil(end)<0&&n<200){end=addMonths(end,+i.renewalMonths);n++;}return end;}
+    return null;}
+  if(i.cycle!=='monthly'&&i.cycle!=='weekly')return nextPay(i);
+  return null;}
+// last day to cancel before the renewal / next commitment
+function cancelBy(i){
+  if(!isLive(i)||i.status==='cancelling')return null;
+  if(i.status==='trial')return okD(i.trialEnds)?addDays(i.trialEnds,-1):null;
+  const r=renewalDate(i);if(r)return minusNotice(r,i.noticeValue,i.noticeUnit);
+  return null;}
+// earliest end date if the user cancels today
+function earliestEnd(i){
+  if(i.status==='trial')return i.trialEnds||today();
+  const r=renewalDate(i);const t=today();
+  if(r){const by=minusNotice(r,i.noticeValue,i.noticeUnit);if(by>=t)return r;
+    // missed: next renewal period
+    if(i.minTermEnd&&i.minTermEnd===r){if(+i.renewalMonths>1)return addMonths(r,+i.renewalMonths);
+      return endOfNoticeFrom(plusNotice(r,0,'days'),i);}
+    return addCycle(r,i.cycle);}
+  const v=+i.noticeValue||0;
+  if(!v){const np=nextPay(i);return np||t;}
+  const e=plusNotice(t,v,i.noticeUnit);
+  if(i.endOfMonth){const d=parseD(e);return isoOf(new Date(d.getFullYear(),d.getMonth()+1,0));}
+  return e;}
+function endOfNoticeFrom(s,i){const e=plusNotice(today(),i.noticeValue||1,i.noticeUnit||'months');return e>s?e:s;}
+
+const ESSENTIAL=['Housing','Utilities','Insurance','Internet & phone'];
+function daysSinceUse(i){if(!okD(i.lastUsed))return null;return -daysUntil(i.lastUsed);}
+function unusedDays(S){return +((S.notify||{}).unusedDays)||45;}
+function isUnused(i,S){if(ESSENTIAL.includes(i.category))return false;const d=daysSinceUse(i);if(d!=null)return d>=unusedDays(S);return i.usage==='never';}
+function priceChange(i){const h=(Array.isArray(i.priceHistory)?i.priceHistory:[]).filter(x=>x&&okD(x.date)&&!isNaN(parseFloat(x.price))).slice().sort((a,b)=>a.date<b.date?-1:1);if(h.length<2)return null;
+  const a=h[h.length-2],b=h[h.length-1];if(+b.price===+a.price)return null;
+  return {from:+a.price,to:+b.price,date:b.date,pct:(b.price-a.price)/a.price*100,daysAgo:-daysUntil(b.date)};}
+
+// ---------- events ----------
+function buildEvents(items,horizonDays=400){
+  const ev=[];const limit=addDays(today(),horizonDays);
+  for(const i of items){
+    if(i.status==='cancelled'||i.status==='paused')continue;
+    let d=nextPay(i);let n=0;
+    while(d&&d<=limit&&n<60){ev.push({kind:'payment',date:d,item:i,title:(i.status==='trial'&&n===0?'First charge':'Payment')});d=addCycle(d,i.cycle);n++;
+      if(i.status==='cancelling'&&i.cancellation&&i.cancellation.endsAt&&d>i.cancellation.endsAt)break;}
+    if(i.status==='trial'&&okD(i.trialEnds))ev.push({kind:'trial',date:i.trialEnds,item:i,title:'Free trial ends'});
+    const r=renewalDate(i);
+    if(r&&i.status!=='trial')ev.push({kind:'renewal',date:r,item:i,title:i.minTermEnd&&r===i.minTermEnd?'Minimum term ends':'Renews'});
+    const c=cancelBy(i);
+    if(c&&i.status!=='trial')ev.push({kind:'deadline',date:c,item:i,title:'Last day to cancel'});
+    if(i.status==='cancelling'&&i.cancellation&&okD(i.cancellation.endsAt))ev.push({kind:'ends',date:i.cancellation.endsAt,item:i,title:'Subscription ends'});
+  }
+  return ev.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);}
+
+// ---------- notifications ----------
+function buildAlerts(items,S){
+  const N=Object.assign({payments:3,trials:3,renewals:30,deadlines:[30,14,7,1],priceIncrease:true,unusedDays:45},S.notify||{});
+  const maxDl=Math.max(...(N.deadlines.length?N.deadlines:[30]));
+  const out=[];const push=a=>out.push(a);
+  for(const e of buildEvents(items,120)){
+    const d=daysUntil(e.date);const i=e.item;const amt=toBase(i.price,i.currency,S);
+    if(e.kind==='payment'&&d>=0&&d<=N.payments)push({key:`pay:${i.id}:${e.date}`,type:'payment',sev:d<=1?'high':'medium',date:e.date,item:i,amount:amt,
+      title:`${i.name}: ${e.title.toLowerCase()} ${whenText(d)}`,body:`${fmtMoneyRaw(i.price,i.currency)} will be charged${i.paymentMethod?' to '+i.paymentMethod:''}.`});
+    if(e.kind==='trial'&&d>=0&&d<=Math.max(N.trials,7))push({key:`trial:${i.id}:${e.date}`,type:'trial',sev:d<=N.trials?'critical':'high',date:e.date,item:i,amount:amt,
+      title:`${i.name}: free trial ends ${whenText(d)}`,body:`After that you pay ${fmtMoneyRaw(i.price,i.currency)} ${cycleWord(i.cycle)}. Cancel before ${fmtDateRaw(e.date)} if you don't want to keep it.`});
+    if(e.kind==='deadline'&&d>=0&&d<=maxDl){const t=N.deadlines.filter(x=>d<=x).sort((a,b)=>a-b)[0];
+      push({key:`dl:${i.id}:${e.date}:${t}`,type:'deadline',sev:d<=7?'critical':d<=14?'high':'medium',date:e.date,item:i,amount:amt,
+      title:`${i.name}: last day to cancel is ${whenText(d)}`,body:`Notice period ${noticeText(i)}. If you don't cancel by ${fmtDateRaw(e.date)}, it ${renewalWords(i)}.`});}
+    if(e.kind==='renewal'&&d>=0&&d<=N.renewals&&!(cancelBy(i)&&daysUntil(cancelBy(i))>=0&&daysUntil(cancelBy(i))<=maxDl))push({key:`ren:${i.id}:${e.date}`,type:'renewal',sev:'low',date:e.date,item:i,amount:amt,
+      title:`${i.name}: ${e.title.toLowerCase()} ${whenText(d)}`,body:cancelBy(i)&&daysUntil(cancelBy(i))<0?`The cancellation deadline (${fmtDateRaw(cancelBy(i))}) has passed. Earliest end if you cancel now: ${fmtDateRaw(earliestEnd(i))}.`:`${fmtMoneyRaw(i.price,i.currency)} ${cycleWord(i.cycle)}.`});
+  }
+  // subscriptions not used for a long time
+  for(const i of items){if(!(i.status==='active'||i.status==='trial')||!isUnused(i,S))continue;const np=nextPay(i);const d=np?daysUntil(np):null;const ds=daysSinceUse(i);
+    push({key:`unused:${i.id}:${np||''}`,type:'unused',sev:d!=null&&d<=7?'high':'medium',date:np||today(),item:i,amount:yearlyEq(i,S),
+      title:ds!=null?`You haven\u2019t used ${i.name} for ${ds} days`:`You never use ${i.name}`,
+      body:`${np?`Next payment of ${fmtMoneyRaw(i.price,i.currency)} is ${whenText(d)}. `:''}Cancelling saves ${fmtMoneyRaw(yearlyEq(i,S),S.baseCurrency)} a year.`});}
+  // missed deadlines (renewal still ahead)
+  for(const i of items){const c=cancelBy(i);const r=renewalDate(i);
+    if(c&&r&&daysUntil(c)<0&&daysUntil(r)>=0&&i.status==='active')push({key:`missed:${i.id}:${c}`,type:'deadline',sev:'medium',date:c,item:i,amount:toBase(i.price,i.currency,S),
+      title:`${i.name}: cancellation deadline passed`,body:`The deadline was ${fmtDateRaw(c)}. It ${renewalWords(i)} on ${fmtDateRaw(r)}. Earliest end if you cancel now: ${fmtDateRaw(earliestEnd(i))}.`});}
+  if(N.priceIncrease)for(const i of items){if(!isLive(i))continue;const p=priceChange(i);if(p&&p.to>p.from&&p.daysAgo<=120){const extra=toBase(p.to-p.from,i.currency,S)*(CYCLES[i.cycle]||CYCLES.monthly).perYear;
+    push({key:`price:${i.id}:${p.date}`,type:'price',sev:p.pct>=8?'high':'medium',date:p.date,item:i,amount:extra,
+      title:`${i.name}: price up ${p.pct.toFixed(0)}%`,body:`${fmtMoneyRaw(p.from,i.currency)} → ${fmtMoneyRaw(p.to,i.currency)} since ${fmtDateRaw(p.date)}. That's ${fmtMoneyRaw(extra,S.baseCurrency)} more per year. A price increase often gives you a special right to cancel.`});}}
+  // cancellation tracking: sent but not confirmed
+  for(const i of items){const c=i.cancellation||{};if(c.status==='sent'&&daysUntil(c.sentAt)<=-7)push({key:`conf:${i.id}:${c.sentAt}`,type:'cancel',sev:'high',date:c.sentAt,item:i,
+      title:`${i.name}: no cancellation confirmation yet`,body:`You sent your cancellation on ${fmtDateRaw(c.sentAt)}. Ask for written confirmation, or resend by registered letter.`});}
+  const rank={critical:0,high:1,medium:2,low:3};
+  return out.sort((a,b)=>rank[a.sev]-rank[b.sev]||(a.date<b.date?-1:1));}
+
+// ---------- savings ----------
+function buildSavings(items,S){
+  const live=items.filter(i=>i.status==='active'||i.status==='trial');const ops=[];
+  for(const i of live){const y=yearlyEq(i,S);
+    if(i.status==='trial')ops.push({type:'trial',item:i,amount:y,title:`Cancel the ${i.name} trial if you don't need it`,why:`Trial ends ${fmtDateRaw(i.trialEnds)}. Then ${fmtMoneyRaw(i.price,i.currency)} ${cycleWord(i.cycle)}.`});
+    else if(isUnused(i,S))ops.push({type:'unused',item:i,amount:y,title:`Cancel ${i.name}`,why:daysSinceUse(i)!=null?`Not used for ${daysSinceUse(i)} days.`:'You marked it as never used.'});
+    else if(i.usage==='rarely'&&!ESSENTIAL.includes(i.category))ops.push({type:'unused',item:i,amount:y,title:`Rethink ${i.name}`,why:'You rarely use it. Pausing or cancelling saves the full cost.'});
+    if(i.cycle==='monthly'&&i.status==='active'&&OVERLAP_CATS.includes(i.category)&&y>=60&&i.usage==='often')ops.push({type:'yearly',item:i,amount:y*0.15,title:`Switch ${i.name} to yearly billing`,why:'Yearly plans are often around 15% cheaper. Estimate; check the provider\'s price.'});
+    if(COMPARE_CATS.includes(i.category)&&!/health|kranken/i.test(i.name+' '+(i.provider||''))&&i.type==='contract'&&(!i.minTermEnd||daysUntil(i.minTermEnd)<120)&&y>=200)ops.push({type:'compare',item:i,amount:y*0.12,title:`Compare tariffs for ${i.name}`,why:i.minTermEnd&&daysUntil(i.minTermEnd)>=0?`Minimum term ends ${fmtDateRaw(i.minTermEnd)}. New-customer offers are often 10–15% cheaper. Estimate.`:'Out of minimum term. New-customer offers are often 10–15% cheaper. Estimate.'});
+  }
+  // overlaps
+  const groups={};for(const i of live)if(OVERLAP_CATS.includes(i.category)&&i.status==='active')(groups[i.category]=groups[i.category]||[]).push(i);
+  const dupGroups=[];
+  for(const [cat,g] of Object.entries(groups))if(g.length>=2){const sorted=g.slice().sort((a,b)=>yearlyEq(b,S)-yearlyEq(a,S));
+    const keep=sorted.find(x=>x.usage==='often')||sorted[0];const others=sorted.filter(x=>x!==keep);
+    dupGroups.push({category:cat,items:sorted,keep,others});
+    for(const o of others)ops.push({type:'overlap',item:o,amount:yearlyEq(o,S),title:`You have ${g.length} ${cat.toLowerCase()} services`,why:`Keep ${keep.name}, drop or rotate ${o.name}.`});}
+  // same provider + same category (exact duplicates)
+  const seen={};for(const i of live){if(ESSENTIAL.includes(i.category))continue;const k=(i.provider||'').toLowerCase()+'|'+i.category;if(seen[k]&&i.provider)ops.push({type:'duplicate',item:i,amount:yearlyEq(i,S),title:`Possible duplicate: ${i.name}`,why:`Same provider and category as ${seen[k].name}.`});else seen[k]=i;}
+  // keep the best opportunity per item
+  const best={};for(const o of ops){if(!best[o.item.id]||o.amount>best[o.item.id].amount)best[o.item.id]=o;}
+  const list=Object.values(best).sort((a,b)=>b.amount-a.amount);
+  return {list,all:ops,total:list.reduce((s,o)=>s+o.amount,0),dupGroups};}
+
+function totals(items,S){let m=0,n=0;const cat={};for(const i of items){if(!counts(i))continue;const v=monthlyEq(i,S);m+=v;n++;cat[i.category||'Other']=(cat[i.category||'Other']||0)+v;}
+  return {monthly:m,yearly:m*12,count:n,byCategory:Object.entries(cat).sort((a,b)=>b[1]-a[1])};}
+function projection(items,S,months=12){const t=parseD(today());const res=[];
+  const ev=buildEvents(items,months*31+31).filter(e=>e.kind==='payment');
+  for(let k=0;k<months;k++){const a=new Date(t.getFullYear(),t.getMonth()+k,1);const key=isoOf(a).slice(0,7);
+    const sum=ev.filter(e=>e.date.slice(0,7)===key).reduce((s,e)=>s+toBase(e.item.price,e.item.currency,S),0);res.push({month:key,total:sum});}
+  return res;}
+
+// ---------- small text helpers used by core ----------
+function whenText(d){if(d===0)return 'today';if(d===1)return 'tomorrow';if(d<0)return `${-d} days ago`;return `in ${d} days`;}
+function cycleWord(c){return {weekly:'per week',monthly:'per month',quarterly:'per quarter','half-yearly':'every 6 months',yearly:'per year'}[c]||'per month';}
+function renewalWords(i){if(i.minTermEnd&&renewalDate(i)===i.minTermEnd){return +i.renewalMonths>1?`renews for ${i.renewalMonths} months`:'continues month to month';}
+  return `renews for another ${({quarterly:'quarter','half-yearly':'6 months',yearly:'year'})[i.cycle]||'period'}`;}
+function fmtMoneyRaw(v,cur){try{return new Intl.NumberFormat('en-IE',{style:'currency',currency:cur||'EUR',minimumFractionDigits:2,maximumFractionDigits:2}).format(+v||0);}catch(e){return (cur||'')+' '+(+v||0).toFixed(2);}}
+function fmtDateRaw(s){const d=parseD(s);if(!d)return '—';return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});}
+
+if(typeof module!=='undefined')module.exports={isUnused,daysSinceUse,CYCLES,today,addDays,addMonths,daysUntil,renewalDate,cancelBy,earliestEnd,nextPay,buildEvents,buildAlerts,buildSavings,totals,projection,priceChange,setToday:t=>{TODAY_OVERRIDE=t;}};
+
+// Example data for Subwise. Dates are relative to `todayStr` (YYYY-MM-DD).
+function demoData(todayStr){
+  const P=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+  const I=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,10);};
+  const D=n=>{const d=P(todayStr);d.setDate(d.getDate()+n);return I(d);};
+  const firstOfNextMonth=()=>{const d=P(todayStr);return I(new Date(d.getFullYear(),d.getMonth()+1,1));};
+  const nextDom=n=>{const d=P(todayStr);let x=new Date(d.getFullYear(),d.getMonth(),n);if(x<d)x=new Date(d.getFullYear(),d.getMonth()+1,n);return I(x);};
+  const firstOfNextYear=()=>{const d=P(todayStr);return I(new Date(d.getFullYear()+1,0,1));};
+  const now=new Date().toISOString();
+  const it=o=>Object.assign({kind:'item',type:'subscription',currency:'EUR',cycle:'monthly',autoRenew:true,status:'active',usage:'often',
+    noticeValue:0,noticeUnit:'days',minTermEnd:'',renewalMonths:null,trialEnds:'',paymentMethod:'',customerNo:'',cancelEmail:'',cancelAddress:'',
+    priceHistory:[],notes:'',docIds:[],cancellation:{status:'none'},createdAt:now},o);
+  const items=[
+    it({id:'i-netflix',lastUsed:D(-9),name:'Netflix Standard',provider:'Netflix',category:'Streaming',price:13.99,nextPayment:D(4),startDate:'2019-08-14',usage:'sometimes',paymentMethod:'PayPal',
+      priceHistory:[{date:'2024-01-10',price:12.99},{date:D(-40),price:13.99}],cancelEmail:'',notes:'Cancel online in account settings.'}),
+    it({id:'i-spotify',lastUsed:D(0),name:'Spotify Premium Family',provider:'Spotify',category:'Music',price:19.99,nextPayment:D(12),startDate:'2020-02-03',usage:'often',paymentMethod:'Visa •• 4821',
+      priceHistory:[{date:'2024-06-01',price:17.99},{date:D(-75),price:19.99}]}),
+    it({id:'i-disney',lastUsed:D(-47),name:'Disney+ Standard',provider:'Disney+',category:'Streaming',price:9.99,nextPayment:D(18),startDate:'2023-11-01',usage:'rarely',paymentMethod:'PayPal'}),
+    it({id:'i-prime',lastUsed:D(-3),name:'Amazon Prime',provider:'Amazon',category:'Shopping',price:89.9,cycle:'yearly',nextPayment:D(37),startDate:'2018-12-17',usage:'often',paymentMethod:'Visa •• 4821'}),
+    it({id:'i-youtube',lastUsed:D(-118),name:'YouTube Premium',provider:'Google',category:'Streaming',price:12.99,nextPayment:D(22),startDate:'2024-04-09',usage:'never',paymentMethod:'Google Pay'}),
+    it({id:'i-icloud',lastUsed:D(0),name:'iCloud+ 200 GB',provider:'Apple',category:'Cloud & software',price:2.99,nextPayment:D(2),startDate:'2021-05-20',usage:'often',paymentMethod:'Apple ID'}),
+    it({id:'i-gone',lastUsed:D(-160),name:'Google One 100 GB',provider:'Google',category:'Cloud & software',price:19.99,cycle:'yearly',nextPayment:D(130),startDate:'2022-03-20',usage:'rarely',paymentMethod:'Google Pay'}),
+    it({id:'i-chatgpt',lastUsed:D(-1),name:'ChatGPT Plus',provider:'OpenAI',category:'Cloud & software',price:20,currency:'USD',nextPayment:D(8),startDate:'2025-02-08',usage:'often',paymentMethod:'Visa •• 4821'}),
+    it({id:'i-gym',lastUsed:D(-19),name:'Gym membership',provider:'Fitness First Berlin',category:'Fitness',type:'contract',price:30,nextPayment:firstOfNextMonth(),startDate:D(-689),minTermEnd:D(41),renewalMonths:1,noticeValue:4,noticeUnit:'weeks',usage:'rarely',
+      paymentMethod:'SEPA direct debit',customerNo:'FF-2291-0457',cancelEmail:'kuendigung@fitnessfirst-berlin.example',cancelAddress:'Fitness First Berlin, Mitgliederservice, Friedrichstraße 100, 10117 Berlin',docIds:['d-gym'],notes:'24-month minimum term. Visited 3 times in the last 2 months.'}),
+    it({id:'i-rent',endOfMonth:true,name:'Rent, Prenzlauer Berg flat',provider:'Wohnbau Mitte GmbH',category:'Housing',type:'contract',price:550,nextPayment:nextDom(1),startDate:'2021-04-01',noticeValue:3,noticeUnit:'months',usage:'often',
+      paymentMethod:'Standing order',customerNo:'WM-44-1187',cancelAddress:'Wohnbau Mitte GmbH, Hausverwaltung, Schönhauser Allee 12, 10435 Berlin',priceHistory:[{date:'2021-04-01',price:520},{date:D(-140),price:550}],docIds:['d-rent'],
+      notes:'Index rent (Indexmiete). Includes €120 advance for heating and service charges.'}),
+    it({id:'i-power',name:'Electricity, Natur12',provider:'Vattenfall',category:'Utilities',type:'contract',price:86,nextPayment:D(15),startDate:D(-267),minTermEnd:D(98),noticeValue:1,noticeUnit:'months',usage:'often',paymentMethod:'SEPA direct debit',
+      customerNo:'VF-8812 3349 01',cancelEmail:'kundenservice@vattenfall-berlin.example',priceHistory:[{date:D(-267),price:79},{date:D(-25),price:86}],docIds:['d-power'],notes:'Monthly advance payment (Abschlag).'}),
+    it({id:'i-internet',name:'Home internet, GigaCube',provider:'Vodafone',category:'Internet & phone',type:'contract',price:20,nextPayment:nextDom(5),startDate:'2022-09-12',minTermEnd:'2024-09-12',noticeValue:1,noticeUnit:'months',usage:'often',paymentMethod:'SEPA direct debit',customerNo:'VD-60028419'}),
+    it({id:'i-mobile',name:'Mobile plan, O2',provider:'O2 Telefónica',category:'Internet & phone',type:'contract',price:19.99,nextPayment:nextDom(5),startDate:D(-540),minTermEnd:D(190),noticeValue:1,noticeUnit:'months',usage:'often',paymentMethod:'SEPA direct debit',customerNo:'O2-0176-55810'}),
+    it({id:'i-health',endOfMonth:true,name:'Health insurance',provider:'',category:'Insurance',type:'contract',price:145,nextPayment:nextDom(15),startDate:'2021-04-01',noticeValue:2,noticeUnit:'months',usage:'often',paymentMethod:'SEPA direct debit',priceHistory:[{date:'2021-04-01',price:145}],notes:'Statutory health insurance: usually 2 months notice to the end of a month, after at least 12 months of membership.'}),
+    it({id:'i-dticket',endOfMonth:true,name:'Deutschlandticket',provider:'',category:'Transport',type:'subscription',price:43,nextPayment:nextDom(1),startDate:'2025-01-01',noticeValue:21,noticeUnit:'days',usage:'often',paymentMethod:'SEPA direct debit',priceHistory:[{date:'2025-01-01',price:43}],notes:'Monthly subscription. Cancel by the 10th of a month to end it at the end of that month.'}),
+    it({id:'i-audible',lastUsed:D(-12),name:'Audible',provider:'Audible',category:'Books & audio',price:9.95,status:'trial',trialEnds:D(3),nextPayment:D(3),startDate:D(-27),usage:'rarely',paymentMethod:'Visa •• 4821',notes:'Free 30-day trial. Converts to the paid plan automatically.'}),
+    it({id:'i-xbox',lastUsed:D(-83),name:'Xbox Game Pass Ultimate',provider:'Microsoft',category:'Gaming',price:17.99,nextPayment:D(26),startDate:'2024-12-26',usage:'never',paymentMethod:'Visa •• 4821',priceHistory:[{date:'2024-12-26',price:17.99}]}),
+    it({id:'i-wow',lastUsed:D(-25),name:'WOW Filme & Serien',provider:'WOW (Sky Deutschland)',category:'Streaming',price:9.99,nextPayment:D(14),startDate:'2025-03-14',usage:'rarely',status:'cancelling',paymentMethod:'PayPal',
+      cancellation:{status:'confirmed',sentAt:D(-6),method:'Email',confirmedAt:D(-4),confirmationNo:'WOW-C-55190',endsAt:D(14),letterId:'l-wow'}})
+  ];
+  const docs=[
+    {id:'d-gym',kind:'document',name:'Mitgliedsvertrag_FitnessFirst.pdf',size:412233,mime:'application/pdf',itemId:'i-gym',uploadedAt:D(-30),assetId:null,
+      text:'MEMBERSHIP AGREEMENT (excerpt)\n\n1. Membership fee. The monthly membership fee is EUR 30.00, collected by SEPA direct debit on the 1st of each month. A one-off starter fee of EUR 39.00 and an annual service fee of EUR 19.90 (charged every 12 months) apply.\n\n2. Term. The minimum term is 24 months from the start date. After the minimum term the membership continues for an indefinite period and can then be cancelled with one month\'s notice.\n\n3. Cancellation. Cancellation of the minimum term requires notice of 4 weeks before the end of the minimum term, in text form (letter or email).\n\n4. Suspension. Membership may be paused only for illness (medical certificate) or pregnancy. The minimum term is extended by the pause.\n\n5. Price adjustments. The studio may adjust fees with 6 weeks notice. Members may object within 4 weeks.',
+      ai:{summary:'Your gym membership costs €30 a month plus a €19.90 yearly service fee. You signed up for 24 months. After that it runs month to month and you can cancel with one month\'s notice.',
+        terms:[{label:'Monthly price',value:'€30.00 + €19.90 yearly service fee'},{label:'Minimum term',value:'24 months'},{label:'Notice to end the minimum term',value:'4 weeks before it ends, by letter or email'},{label:'After the minimum term',value:'Month to month, 1 month notice'}],
+        plain:['If you cancel at least 4 weeks before your 24 months are up, the membership ends on that date.','If you miss that date, nothing bad happens for long: it simply runs month to month after that.','You can only pause for illness or pregnancy, and pausing pushes your end date back.'],
+        risks:[{term:'Yearly service fee',severity:'medium',explanation:'An extra €19.90 is charged every 12 months on top of the monthly fee, which is easy to miss.'},{term:'Pause extends the contract',severity:'low',explanation:'Pausing doesn\'t cancel months; it moves your end date later.'},{term:'Price changes with 6 weeks notice',severity:'medium',explanation:'The gym can raise prices. You have 4 weeks to object once you are told.'}],at:now}},
+    {id:'d-power',kind:'document',name:'Vattenfall_Preisanpassung_2026.pdf',size:188004,mime:'application/pdf',itemId:'i-power',uploadedAt:D(-25),assetId:null,
+      text:'NOTICE OF PRICE ADJUSTMENT (excerpt)\n\nDear customer, due to increased grid fees we will adjust your electricity price from the 1st of next month. Working price: from 31.9 ct/kWh to 34.6 ct/kWh. Base price: from EUR 12.50 to EUR 13.90 per month. Your monthly advance payment will change from EUR 79.00 to EUR 86.00.\n\nYou have a special right to terminate your contract without notice with effect from the date the price change takes effect. Please inform us in text form.',
+      ai:{summary:'Vattenfall is raising your electricity price. Your monthly payment goes from €79 to €86 (about €84 more per year). Because of the increase you are allowed to cancel early.',
+        terms:[{label:'Working price',value:'31.9 → 34.6 ct/kWh'},{label:'Base price',value:'€12.50 → €13.90 per month'},{label:'Monthly advance',value:'€79 → €86'},{label:'Special cancellation right',value:'Yes, effective on the date of the price change'}],
+        plain:['Your price goes up about 9%.','You can leave the contract because of this change, even before the minimum term ends.','Compare offers now: if a cheaper tariff exists, use the special cancellation right before it lapses.'],
+        risks:[{term:'Price increase',severity:'high',explanation:'+€7 per month, about €84 per year.'},{term:'Special cancellation right is time-limited',severity:'medium',explanation:'It only applies up to the date the new price takes effect.'}],at:now}},
+    {id:'d-rent',kind:'document',name:'Mietvertrag_Wohnung.pdf',size:905771,mime:'application/pdf',itemId:'i-rent',uploadedAt:D(-200),assetId:null,
+      text:'RESIDENTIAL LEASE (excerpt)\n\n§ 3 Rent. Net cold rent EUR 430; advance payment for heating and service charges EUR 120; total EUR 550 per month, payable in advance by the 3rd working day of the month.\n\n§ 4 Index rent. The net rent is linked to the consumer price index for Germany. Adjustments may be requested at most once every 12 months in text form.\n\n§ 5 Term. The lease runs for an indefinite period. The tenant may terminate with the statutory notice period of three months.\n\n§ 9 Cosmetic repairs. The tenant carries out cosmetic repairs as needed.\n\n§ 14 Deposit. Three monthly net cold rents (EUR 1,290).',
+      ai:{summary:'Your rent is €550 a month (€430 rent + €120 service charges). It is an index rent, so it can rise with inflation once a year. You can move out with three months notice.',
+        terms:[{label:'Monthly rent',value:'€430 net + €120 service charges'},{label:'Rent type',value:'Index rent, max. one increase per 12 months'},{label:'Notice period (you)',value:'3 months'},{label:'Deposit',value:'€1,290'}],
+        plain:['Your rent can go up once a year in line with inflation; the landlord has to tell you in writing.','To move out, your notice must arrive by the 3rd working day of a month; the lease then ends at the end of the month after next.','Service charges are an advance; you get a yearly statement and may get money back or pay extra.'],
+        risks:[{term:'Index rent',severity:'medium',explanation:'Rent follows inflation, so yearly increases are likely.'},{term:'Cosmetic repairs clause',severity:'low',explanation:'Such clauses are often invalid in Germany; check before paying for repainting when you move out.'}],at:now}}
+  ];
+  const letters=[
+    {id:'l-wow',kind:'letter',itemId:'i-wow',language:'en',channel:'email',createdAt:D(-6),subject:'Cancellation of my WOW subscription',
+      body:'Dear WOW team,\n\nI hereby cancel my WOW Filme & Serien subscription at the earliest possible date.\n\nPlease send me written confirmation of the cancellation, including the date on which it takes effect.\n\nKind regards'}
+  ];
+  const settings={id:'settings',kind:'settings',baseCurrency:'EUR',country:'DE',
+    fx:{EUR:1,USD:0.92,GBP:1.17,CHF:1.06},
+    notify:{payments:3,trials:3,renewals:30,deadlines:[30,14,7,1],priceIncrease:true,unusedDays:45},
+    profile:{name:'Sharan',address:'',email:''},dismissed:{}};
+  return {items,docs,letters,settings};
+}
+if(typeof module!=='undefined') module.exports={demoData};
+
+// ===== Subwise UI =====
+const $=(s,el=document)=>el.querySelector(s);
+const $$=(s,el=document)=>[...el.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=p=>(p||'i')+'-'+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const money=(v,cur)=>fmtMoneyRaw(v,cur||SET.baseCurrency);
+const moneyShort=(v,cur)=>{try{return new Intl.NumberFormat('en-IE',{style:'currency',currency:cur||SET.baseCurrency,maximumFractionDigits:v>=1000?0:2,minimumFractionDigits:v>=1000?0:2}).format(v);}catch(e){return money(v,cur);}};
+const fmtDate=fmtDateRaw;
+const fmtShort=s=>{const d=parseD(s);return d?d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'—';};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function defaultSettings(){return {id:'settings',kind:'settings',baseCurrency:'EUR',country:'DE',fx:{EUR:1,USD:0.92,GBP:1.17,CHF:1.06},notify:{payments:3,trials:3,renewals:30,deadlines:[30,14,7,1],priceIncrease:true,unusedDays:45},profile:{name:'Sharan',address:'',email:''},dismissed:{}};}
+
+// ---------- state ----------
+let ITEMS=[],DOCS=[],LETTERS=[],SET=defaultSettings();
+let MODE='loading'; // cloud | local | demo-cloud | demo-local
+let DB=null,COL=null,UID=null,SAMPLE=null,DL=null,ASSETS=null,AI_IMAGES=false;
+let BANNER='';const STANDALONE=!(window.claude&&typeof window.claude.use==='function');const canDL=()=>!!DL||STANDALONE;
+const UI={q:'',cat:'',status:'',sort:'next',calMonth:null,showDismissed:false,docId:null,docTab:'summary',chats:{},cancelId:null,busy:{}};
+const LS_KEY='subwise-v1';
+const isDemo=()=>MODE.startsWith('demo');
+
+function applyData(d){ITEMS=d.items||[];DOCS=d.docs||[];LETTERS=d.letters||[];SET=Object.assign(defaultSettings(),d.settings||{});SET.notify=Object.assign(defaultSettings().notify,SET.notify||{});SET.fx=Object.assign(defaultSettings().fx,SET.fx||{});SET.profile=Object.assign({name:'',address:'',email:''},SET.profile||{});if(!SET.profile.name)SET.profile.name='Sharan';SET.dismissed=SET.dismissed||{};}
+function lsGet(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(e){return null;}}
+function lsSet(){try{localStorage.setItem(LS_KEY,JSON.stringify({items:ITEMS,docs:DOCS,letters:LETTERS,settings:SET}));}catch(e){}}
+
+async function init(){
+  window.addEventListener('hashchange',()=>{const h=hashRoute();if(h&&h!==CUR_ROUTE){CUR_ROUTE=h;closeDrawer();render();}});
+  render();
+  setTimeout(()=>{if(MODE==='loading'){BANNER='Your saved data is taking long to load. Showing example data for now.';startDemo(DB?'cloud':'local');}},12000);
+  const cl=window.claude&&typeof window.claude.use==='function'?window.claude:null;
+  if(!cl){startLocal();return;}
+  cl.use('sample').then(async s=>{SAMPLE=s;try{const l=s&&s.limits?await s.limits():null;AI_IMAGES=!!(l&&l.images);}catch(e){}render();}).catch(()=>{});
+  cl.use('downloads').then(d=>{DL=d;render();}).catch(()=>{});
+  cl.use('assets').then(a=>{ASSETS=a;}).catch(()=>{});
+  let db=null,user=null;
+  try{[db,user]=await Promise.all([cl.use('db'),cl.use('user')]);}catch(e){}
+  if(!db||!user){startLocal();return;}
+  try{UID=await user.id();}catch(e){UID=null;}
+  if(!UID){startLocal();return;}
+  DB=db;COL=db.collection('data/users/'+UID);
+  let first=true;
+  const timer=setTimeout(()=>{if(MODE==='loading'){BANNER='Your data can\u2019t be reached yet. Check your connection; it will appear when it loads.';startDemo('cloud');}},10000);
+  COL.onSnapshot(snap=>{
+    if(snap.metadata.fromCache&&snap.empty)return;
+    clearTimeout(timer);if(!snap.metadata.fromCache)BANNER='';
+    const all=snap.docs.map(d=>Object.assign({},d.data(),{id:d.id}));
+    if(!all.length){if(first||MODE==='loading'){first=false;startDemo('cloud');}return;}
+    first=false;MODE='cloud';
+    applyData({items:all.filter(x=>x.kind==='item'),docs:all.filter(x=>x.kind==='document'),letters:all.filter(x=>x.kind==='letter'),settings:all.find(x=>x.kind==='settings')});
+    scheduleRender();migrateRent();
+  },err=>{clearTimeout(timer);BANNER='Your saved data couldn\u2019t be loaded ('+(err&&err.code||'error')+'). Changes now stay in this browser only.';startLocal();});
+}
+// one-time update: Sharan's rent is €550 a month
+let MIGRATING=false;
+async function migrateRent(){if(MIGRATING||isDemo()||(SET.rent550&&SET.mobileO2&&SET.netGigaCube&&SET.gym30&&SET.payDays&&SET.health145&&SET.oneInsurance&&SET.dticket43&&SET.eom))return;const r=ITEMS.find(i=>i.id==='i-rent');MIGRATING=true;
+  try{if(!SET.rent550&&r){const o=clone(r);o.price=550;const h=(o.priceHistory||[]).slice().sort((x,y)=>x.date<y.date?-1:1);
+      o.priceHistory=h.length>=2?[{date:h[0].date,price:520},{date:h[h.length-1].date,price:550}]:[{date:o.startDate||'2021-04-01',price:550}];
+      if(o.notes)o.notes=o.notes.replace('€210','€120');await save(o);}
+    const d=DOCS.find(x=>x.id==='d-rent');
+    if(!SET.rent550&&d){const nd=clone(d);const seedDoc=demoData(today()).docs.find(x=>x.id==='d-rent');nd.text=seedDoc.text;if(nd.ai)nd.ai=Object.assign({},nd.ai,{summary:seedDoc.ai.summary,terms:seedDoc.ai.terms});await save(nd);}
+    const mb=ITEMS.find(i=>i.id==='i-mobile');
+    if(!SET.mobileO2&&mb){const o=clone(mb);o.name='Mobile plan, O2';o.provider='O2 Telefónica';o.price=19.99;o.currency='EUR';o.cycle='monthly';o.priceHistory=[{date:o.startDate||today(),price:19.99}];if(/^VD-/.test(o.customerNo||''))o.customerNo=o.customerNo.replace(/^VD-/,'O2-');await save(o);}
+    const nt=ITEMS.find(i=>i.id==='i-internet');
+    if(!SET.netGigaCube&&nt){const o=clone(nt);o.name='Home internet, GigaCube';o.provider='Vodafone';o.price=20;o.currency='EUR';o.cycle='monthly';o.priceHistory=[{date:o.startDate||today(),price:20}];if(/^O2-/.test(o.customerNo||''))o.customerNo=o.customerNo.replace(/^O2-/,'VD-');await save(o);}
+    const gy=ITEMS.find(i=>i.id==='i-gym');
+    if(!SET.gym30&&gy){const o=clone(gy);o.price=30;o.currency='EUR';o.cycle='monthly';o.priceHistory=[{date:o.startDate||today(),price:30}];await save(o);}
+    const gd=DOCS.find(x=>x.id==='d-gym');
+    if(!SET.gym30&&gd){const nd=clone(gd);const sd=demoData(today()).docs.find(x=>x.id==='d-gym');nd.text=sd.text;if(nd.ai)nd.ai=Object.assign({},nd.ai,{summary:sd.ai.summary,terms:sd.ai.terms});await save(nd);}
+    if(!SET.payDays){const dom=n=>{const t=parseD(today());let x=new Date(t.getFullYear(),t.getMonth(),n);if(x<t)x=new Date(t.getFullYear(),t.getMonth()+1,n);return isoOf(x);};
+      for(const [id,day] of [['i-rent',1],['i-internet',5],['i-mobile',5],['i-hausrat',15]]){const it=ITEMS.find(i=>i.id===id);if(!it)continue;const o=clone(it);o.nextPayment=dom(day);
+        if(id==='i-hausrat'&&o.cycle!=='monthly'){o.price=Math.round(toBase(o.price,o.currency,SET)/12*100)/100;o.currency=SET.baseCurrency;o.cycle='monthly';o.priceHistory=[{date:o.startDate||today(),price:o.price}];}
+        await save(o);}}
+    if(!SET.health145&&!ITEMS.some(i=>i.id==='i-health')){const h=demoData(today()).items.find(i=>i.id==='i-health');if(h)await save(clone(h));}
+    if(!SET.oneInsurance){const hr=ITEMS.find(i=>i.id==='i-hausrat');if(hr)await removeObj(hr);}
+    if(!SET.dticket43&&!ITEMS.some(i=>i.id==='i-dticket')){const t=demoData(today()).items.find(i=>i.id==='i-dticket');if(t)await save(clone(t));}
+    if(!SET.eom)for(const id of ['i-rent','i-health','i-dticket']){const it=ITEMS.find(i=>i.id===id);if(it&&!it.endOfMonth){const o=clone(it);o.endOfMonth=true;await save(o);}}
+    SET=Object.assign({},SET,{rent550:true,mobileO2:true,netGigaCube:true,gym30:true,payDays:true,health145:true,oneInsurance:true,dticket43:true,eom:true});await saveSettings();}catch(e){}MIGRATING=false;}
+function startLocal(){const d=lsGet();if(d&&(d.items||[]).length+(d.docs||[]).length>0||d&&d.started){applyData(d);MODE='local';migrateRent();}else startDemo('local');render();}
+function startDemo(where){applyData(demoData(today()));MODE='demo-'+where;render();}
+
+async function keepExamples(silent){SET.rent550=true;SET.mobileO2=true;SET.netGigaCube=true;SET.gym30=true;SET.payDays=true;SET.health145=true;SET.oneInsurance=true;SET.dticket43=true;SET.eom=true;const where=MODE==='demo-cloud'?'cloud':'local';
+  if(where==='cloud'){if(!silent)toast('Saving examples to your account\u2026');const all=[...ITEMS,...DOCS,...LETTERS,SET];
+    try{for(const o of all){await COL.doc(o.id).set(clean(o));}MODE='cloud';toast(silent?'Change saved. The example data is now yours to edit.':'Examples saved. Edit or delete them any time.');}catch(e){dbErr(e);} }
+  else{MODE='local';lsSet();toast(silent?'Change saved in this browser.':'Examples kept in this browser.');}
+  render();}
+async function startFresh(){const where=MODE==='demo-cloud'?'cloud':'local';applyData({items:[],docs:[],letters:[],settings:Object.assign(defaultSettings(),{started:true})});
+  if(where==='cloud'){try{await COL.doc('settings').set(clean(SET));MODE='cloud';}catch(e){dbErr(e);}}else{MODE='local';SET.started=true;try{localStorage.setItem(LS_KEY,JSON.stringify({items:[],docs:[],letters:[],settings:SET,started:true}));}catch(e){}}
+  render();openItemForm();}
+
+function clean(o){return JSON.parse(JSON.stringify(o,(k,v)=>v===undefined?null:v));}
+function dbErr(e){const c=e&&e.code;toast(c==='quota_exceeded'?'Storage is full. Delete some documents and try again.':c==='invalid_argument'?'This change couldn\u2019t be saved (too large or not allowed).':'Couldn\u2019t save. Check your connection and try again.','error');}
+async function save(o){o.updatedAt=new Date().toISOString();
+  const arr=o.kind==='item'?ITEMS:o.kind==='document'?DOCS:o.kind==='letter'?LETTERS:null;
+  if(o.kind==='settings')SET=o;else{const i=arr.findIndex(x=>x.id===o.id);if(i>=0)arr[i]=o;else arr.push(o);}
+  if(isDemo()){await keepExamples(true);scheduleRender();return true;}
+  if(MODE==='cloud'){try{await COL.doc(o.id).set(clean(o));}catch(e){dbErr(e);return false;}}
+  else if(MODE==='local')lsSet();
+  scheduleRender();return true;}
+async function removeObj(o){const arr=o.kind==='item'?ITEMS:o.kind==='document'?DOCS:LETTERS;const i=arr.findIndex(x=>x.id===o.id);if(i>=0)arr.splice(i,1);
+  if(MODE==='cloud'){try{await COL.doc(o.id).delete();}catch(e){dbErr(e);}}else if(MODE==='local')lsSet();scheduleRender();}
+const saveSettings=()=>save(SET);
+
+// ---------- render ----------
+let rq=0;function scheduleRender(){cancelAnimationFrame(rq);rq=requestAnimationFrame(render);}
+const ROUTES=[
+  ['dashboard','Dashboard','M3 12l9-8 9 8M5 10v10h14V10'],
+  ['subscriptions','Subscriptions','M4 6h16M4 12h16M4 18h10'],
+  ['calendar','Renewals & deadlines','M4 5h16v15H4zM4 9h16M9 3v4M15 3v4'],
+  ['notifications','Notifications','M6 16V11a6 6 0 1112 0v5l2 2H4zM10 21h4'],
+  ['reader','AI contract reader','M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6'],
+  ['cancel','Cancellation assistant','M5 5l14 14M19 5L5 19'],
+  ['insights','Prices & savings','M4 19V9M10 19V5M16 19v-7M22 19H2'],
+  ['preferences','Settings','M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.6 1.6 0 00-1-1.5 1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H3a2 2 0 110-4h.1a1.6 1.6 0 001.5-1 1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V9a1.6 1.6 0 001.5 1H21a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z']
+];
+const icon=(d,c='')=>`<svg class="ic ${c}" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+let CUR_ROUTE=null;
+function hashRoute(){const h=(location.hash||'').slice(1);if(ROUTES.some(r=>r[0]===h))return h;if(h==='settings')return 'preferences';return null;}
+function route(){return CUR_ROUTE||hashRoute()||'dashboard';}
+function go(r){CUR_ROUTE=r;closeDrawer();if($('#modals').children.length)closeModal();try{if(location.hash!=='#'+r)location.hash=r;}catch(e){}render();try{$('.main').scrollIntoView({block:'start'});window.scrollTo(0,0);}catch(e){}}
+
+function render(){
+  const r=route();const app=$('#app');
+  const ae=document.activeElement;const focusId=ae&&ae.id&&app.contains(ae)?ae.id:null;const sel=focusId&&ae.selectionStart!=null?[ae.selectionStart,ae.selectionEnd]:null;
+  let alerts=[];try{alerts=activeAlerts();}catch(e){console.error(e);}
+  app.innerHTML=`
+  <aside class="side" id="side">
+    <a class="brand" href="#dashboard" data-go="dashboard">${logo()}<span>Sub<em>wise</em></span></a>
+    <nav>${ROUTES.map(([k,l,d])=>`<a href="#${k}" data-go="${k}" class="${r===k?'on':''}">${icon(d)}<span>${l}</span>${k==='notifications'&&alerts.length?`<b class="count">${alerts.length}</b>`:''}</a>`).join('')}</nav>
+    <div class="side-foot">${modeBadge()}</div>
+  </aside>
+  <main class="main">
+    <header class="top"><button class="iconbtn menu" data-act="menu" aria-label="Open menu">${icon('M4 6h16M4 12h16M4 18h16')}</button>
+      <h1>${ROUTES.find(x=>x[0]===r)[1]}</h1>
+      <div class="top-actions"><button class="btn ghost" data-act="read">${icon('M7 3h7l5 5v13H7zM14 3v5h5')}<span>Read a contract</span></button><button class="btn primary" data-act="add">${icon('M12 5v14M5 12h14')}<span>Add subscription</span></button></div>
+    </header>
+    ${demoBanner()}${BANNER?`<div class="banner warn">${esc(BANNER)}</div>`:''}
+    <div class="view">${MODE==='loading'?loadingView():safeView(r)}</div>
+  </main>`;
+  if(focusId){const el=document.getElementById(focusId);if(el){el.focus();if(sel&&el.setSelectionRange)try{el.setSelectionRange(sel[0],sel[1]);}catch(e){}}}
+  const after=AFTER[r];if(after&&MODE!=='loading'){try{after();}catch(e){console.error(e);}}
+}
+function safeView(r){try{return VIEWS[r]();}catch(e){console.error(e);
+  return `<div class="card pad stack"><h2>This page couldn\u2019t be shown</h2><p class="muted">Something in your data is in an unexpected format (${esc(e&&e.message||e)}). Your data is safe.</p><div class="row"><button class="btn primary" data-act="repair">Fix my data automatically</button><button class="btn" data-go="subscriptions" onclick="go('subscriptions')">Open subscriptions</button></div></div>`;}}
+function logo(){return `<svg class="logo" viewBox="0 0 48 48" role="img" aria-label="Subwise owl logo"><rect width="48" height="48" rx="13" fill="#0B7A62"/>  <path d="M11 19 9.5 8.5 18.5 13.6Q24 11.8 29.5 13.6L38.5 8.5 37 19Q41 25.5 38.4 32.6 34.6 41 24 41 13.4 41 9.6 32.6 7 25.5 11 19Z" fill="#E9F7F2"/>  <circle cx="17.4" cy="25" r="6.6" fill="#0F221C"/>  <circle cx="30.6" cy="25" r="6.6" fill="#0F221C"/>  <path d="M20.8 25A3.4 3.4 0 1 1 17.6 21.6" fill="none" stroke="#E9F7F2" stroke-width="1.6" stroke-linecap="round"/>  <path d="M16.9 19.9 19.6 21.6 16.9 23.3Z" fill="#E9F7F2"/>  <circle cx="30.6" cy="25" r="3.1" fill="#F0A63A"/>  <path d="M24 30.2 26.1 33 24 35.6 21.9 33Z" fill="#F0A63A"/></svg>`;}
+function modeBadge(){if(MODE==='cloud')return '<span class="dot ok"></span>Saved to your account';if(MODE==='local')return '<span class="dot warn"></span>Saved in this browser only';if(isDemo())return '<span class="dot"></span>Example data';return '<span class="dot"></span>Loading\u2026';}
+function demoBanner(){if(!isDemo())return '';return `<div class="banner demo"><div><b>You\u2019re looking at example data.</b> Change any number by clicking it. Your first change saves the examples so you can keep editing them.</div><div class="row"><button class="btn small primary" data-act="keep">Keep the examples</button><button class="btn small" data-act="fresh">Start with my own</button></div></div>`;}
+function loadingView(){return `<div class="empty"><div class="spinner"></div><p>Loading your subscriptions\u2026</p></div>`;}
+
+function activeAlerts(){return buildAlerts(ITEMS,SET).filter(a=>!SET.dismissed[a.key]);}
+
+// ---------- shared bits ----------
+const CAT_HUE={Streaming:350,Music:145,Gaming:265,'Books & audio':30,'News & magazines':210,'Cloud & software':195,Fitness:15,Housing:40,Utilities:55,'Internet & phone':225,Insurance:170,Shopping:300,Transport:90,Finance:120,Other:0};
+function avatar(i,size=''){const h=CAT_HUE[i.category]??0;const ch=((String(i.provider||'').trim()||String(i.name||'').trim()||'?')[0]).toUpperCase();return `<span class="av ${size}" style="--h:${h}">${esc(ch)}</span>`;}
+function statusPill(i){const s=i.status;const c={active:'ok',trial:'info',cancelling:'warn',paused:'muted',cancelled:'muted'}[s]||'muted';return `<span class="pill ${c}">${STATUS[s]||s}</span>`;}
+function dayChip(s,kind){if(!s)return '<span class="muted">—</span>';const d=daysUntil(s);const cls=d<0?'muted':d<=7?'crit':d<=30?'warn':'calm';return `<span class="chip ${cls}" title="${fmtDate(s)}">${fmtShort(s)}<em>${d<0?Math.abs(d)+'d ago':d===0?'today':d+'d'}</em></span>`;}
+const sevLabel={critical:'Urgent',high:'Soon',medium:'Heads-up',low:'Info'};
+function typeLabel(t){return {unused:'Not used',payment:'Payment',trial:'Free trial',deadline:'Cancel deadline',renewal:'Renewal',price:'Price change',cancel:'Cancellation'}[t]||t;}
+function evLabel(k){return {payment:'Payment',trial:'Trial ends',renewal:'Renews',deadline:'Cancel by',ends:'Ends'}[k];}
+function findItem(id){return ITEMS.find(x=>x.id===id);}
+
+const who=()=>(SET.profile&&SET.profile.name)||'You';
+const whose=()=>{const n=who();return n==='You'?'Your':n+(/s$/i.test(n)?'\u2019':'\u2019s');};
+// ---------- DASHBOARD ----------
+const VIEWS={};const AFTER={};
+VIEWS.dashboard=()=>{
+  const t=totals(ITEMS,SET);const sv=buildSavings(ITEMS,SET);const al=activeAlerts();
+  const ev=buildEvents(ITEMS,30).filter(e=>daysUntil(e.date)>=0);
+  const due30=ev.filter(e=>e.kind==='payment').reduce((s,e)=>s+toBase(e.item.price,e.item.currency,SET),0);
+  const trials=ITEMS.filter(i=>i.status==='trial');
+  const proj=projection(ITEMS,SET,12);const pmax=Math.max(1,...proj.map(p=>p.total));
+  const catMax=Math.max(1,...t.byCategory.map(c=>c[1]));
+  if(!ITEMS.length)return emptyHome();
+  return `
+  <div class="greet"><div><h2>Hi ${esc(who())}, here\u2019s where your money goes</h2><p>${esc(who())} spends <b>${moneyShort(t.monthly)}</b> a month on ${t.count} subscriptions and contracts. That\u2019s <b>${moneyShort(t.yearly)}</b> a year.</p></div></div>
+  <div class="editbar"><span>Click any total, bar or month to change the numbers behind it.</span><button class="btn small" data-act="grid" data-scope="all">${icon('M4 20h4L19 9l-4-4L4 16zM14 6l4 4')}Edit all numbers</button></div>
+  <section class="kpis">
+    <div class="kpi hero click" data-act="grid" data-scope="all" title="Change the numbers behind this"><label>${esc(who())} spends per month</label><strong>${moneyShort(t.monthly)}</strong><small>${t.count} active${trials.length?` · ${trials.length} free trial${trials.length>1?'s':''} not counted`:''}</small></div>
+    <div class="kpi click" data-act="grid" data-scope="all" title="Change the numbers behind this"><label>${esc(who())} spends per year</label><strong>${moneyShort(t.yearly)}</strong><small>all recurring costs</small></div>
+    <div class="kpi click" data-act="grid" data-scope="due30" title="Change the numbers behind this"><label>Due in the next 30 days</label><strong>${moneyShort(due30)}</strong><small>${ev.filter(e=>e.kind==='payment').length} payments</small></div>
+    <div class="kpi save"><label>${esc(who())} could save</label><strong>${moneyShort(sv.total)}<span>/yr</span></strong><small><a href="#insights" data-go="insights">${sv.list.length} ideas</a></small></div>
+  </section>
+  <section class="grid2">
+    <div class="card"><div class="card-h"><h2>Needs your attention</h2><a href="#notifications" data-go="notifications">All ${al.length}</a></div>
+      ${al.length?`<ul class="alerts compact">${al.slice(0,5).map(alertRow).join('')}</ul>`:`<p class="muted pad">Nothing urgent. You\u2019re on top of things.</p>`}</div>
+    <div class="card"><div class="card-h"><h2>Next 30 days</h2><a href="#calendar" data-go="calendar">Calendar</a></div>
+      ${ev.length?`<ul class="timeline">${ev.slice(0,8).map(e=>`<li data-act="open" data-id="${e.item.id}" class="tl ${e.kind}"><span class="tl-date"><b>${parseD(e.date).getDate()}</b>${parseD(e.date).toLocaleDateString('en-GB',{month:'short'})}</span><span class="tl-dot"></span><span class="tl-main"><b>${esc(e.item.name)}</b><small>${evLabel(e.kind)}${e.kind==='payment'||e.kind==='trial'?' · '+money(e.item.price,e.item.currency):''}</small></span><span class="tl-in">${whenText(daysUntil(e.date))}</span></li>`).join('')}</ul>`:'<p class="muted pad">No payments or deadlines in the next 30 days.</p>'}</div>
+  </section>
+  <section class="grid2">
+    <div class="card"><div class="card-h"><h2>${esc(whose())} monthly spend by category</h2></div>
+      <ul class="bars">${t.byCategory.map(([c,v])=>`<li data-act="grid" data-scope="cat:${esc(c)}" title="Change ${esc(c)} numbers"><span class="bl"><i class="sw" style="--h:${CAT_HUE[c]??0}"></i>${esc(c)}</span><span class="bt"><i style="width:${(v/catMax*100).toFixed(1)}%;--h:${CAT_HUE[c]??0}"></i></span><span class="bv">${money(v)}</span><span class="bp">${(v/t.monthly*100).toFixed(0)}%</span></li>`).join('')}</ul></div>
+    <div class="card"><div class="card-h"><h2>${esc(whose())} payments over the next 12 months</h2></div>
+      <div class="proj">${proj.map((p,k)=>{const d=parseD(p.month+'-01');return `<div class="pcol" data-act="grid" data-scope="month:${p.month}" title="${d.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}: ${money(p.total)}${k===0?' (rest of this month)':''}"><span class="pv">${p.total>=1000?(p.total/1000).toFixed(1)+'k':Math.round(p.total)}</span><i style="height:${(p.total/pmax*100).toFixed(1)}%" class="${k===0?'part':''}"></i><span class="pm">${d.toLocaleDateString('en-GB',{month:'short'})}</span></div>`;}).join('')}</div>
+      <p class="note">Click a month to change its payments. First bar covers the rest of ${parseD(today()).toLocaleDateString('en-GB',{month:'long'})}. Amounts in ${SET.baseCurrency}.</p></div>
+  </section>
+  <section class="card"><div class="card-h"><h2>Top savings ideas</h2><a href="#insights" data-go="insights">See all</a></div>
+    <ul class="ideas">${sv.list.slice(0,4).map(ideaRow).join('')||'<li class="muted pad">No savings ideas right now.</li>'}</ul></section>`;};
+function emptyHome(){return `<div class="empty big">${logo()}<h2>Start tracking your recurring costs</h2><p>Add Netflix, your gym, rent, phone, insurance and everything else that charges you regularly. Or upload a contract and let AI fill in the details.</p><div class="row"><button class="btn primary" data-act="add">Add a subscription</button><button class="btn" data-act="read">Upload a contract</button></div></div>`;}
+function alertRow(a){return `<li class="alert sev-${a.sev}" data-act="open" data-id="${a.item.id}"><span class="sev">${sevLabel[a.sev]}</span><div><b>${esc(a.title)}</b><p>${esc(a.body)}</p></div></li>`;}
+function ideaRow(o){return `<li><span class="idea-amt">${moneyShort(o.amount)}<small>/yr</small></span><div><b>${esc(o.title)}</b><p>${esc(o.why)}</p></div><div class="row">${o.type==='compare'||o.type==='yearly'?`<button class="btn small" data-act="open" data-id="${o.item.id}">Details</button>`:`<button class="btn small" data-act="startcancel" data-id="${o.item.id}">Cancel it</button>`}</div></li>`;}
+
+// ---------- SUBSCRIPTIONS ----------
+VIEWS.subscriptions=()=>{
+  const cats=[...new Set(ITEMS.map(i=>i.category))].sort();
+  let list=ITEMS.filter(i=>(!UI.cat||i.category===UI.cat)&&(!UI.status||i.status===UI.status)&&(!UI.q||(i.name+' '+i.provider+' '+i.category).toLowerCase().includes(UI.q.toLowerCase())));
+  const key={next:i=>nextPay(i)||'9999',price:i=>-monthlyEq(i,SET),name:i=>i.name.toLowerCase(),deadline:i=>cancelBy(i)&&daysUntil(cancelBy(i))>=0?cancelBy(i):'9999'}[UI.sort];
+  list.sort((a,b)=>{const x=key(a),y=key(b);return x<y?-1:x>y?1:0;});
+  const t=totals(list,SET);
+  const grid=UI.subView==='grid';
+  return `<div class="toolbar">
+    <div class="seg big" role="group" aria-label="View"><button class="${grid?'':'on'}" data-act="subview" data-v="list">List</button><button class="${grid?'on':''}" data-act="subview" data-v="grid">Edit all numbers</button></div>
+    <div class="search">${icon('M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.3-4.3')}<input id="q" type="search" placeholder="Search subscriptions" value="${esc(UI.q)}" aria-label="Search"></div>
+    <select id="fcat" aria-label="Category"><option value="">All categories</option>${cats.map(c=>`<option ${UI.cat===c?'selected':''}>${esc(c)}</option>`).join('')}</select>
+    <select id="fstatus" aria-label="Status"><option value="">Any status</option>${Object.entries(STATUS).map(([k,v])=>`<option value="${k}" ${UI.status===k?'selected':''}>${v}</option>`).join('')}</select>
+    <select id="fsort" aria-label="Sort"><option value="next" ${UI.sort==='next'?'selected':''}>Next payment</option><option value="deadline" ${UI.sort==='deadline'?'selected':''}>Cancel deadline</option><option value="price" ${UI.sort==='price'?'selected':''}>Highest cost</option><option value="name" ${UI.sort==='name'?'selected':''}>Name</option></select>
+    <span class="tb-sum">${list.length} shown · ${money(t.monthly)}/mo</span>
+  </div>
+  ${grid?`<div class="live" data-live="all">${liveStatsHTML()}</div>${list.length?gridHTML(list):''}<div class="row"><button class="btn" data-act="gridadd">Add a row</button><span class="note">Changes save automatically. Every total, chart, reminder and savings idea updates as you type.</span></div>`:list.length?`<div class="table-wrap"><table class="list"><thead><tr><th>Subscription</th><th>Category</th><th class="num">Price</th><th class="num">Per month</th><th>Next payment</th><th>Cancel by</th><th>Status</th><th><span class="sr">Edit</span></th></tr></thead><tbody>
+  ${list.map(i=>{const pc=priceChange(i);const cb=cancelBy(i);return `<tr data-act="open" data-id="${i.id}" tabindex="0">
+    <td><div class="who">${avatar(i)}<div><b>${esc(i.name)}</b><small>${esc(i.provider||'')}${i.type==='contract'?' · contract':''}</small></div></div></td>
+    <td><span class="cat" style="--h:${CAT_HUE[i.category]??0}">${esc(i.category)}</span></td>
+    <td class="num"><button class="numbtn" data-act="quick" data-id="${i.id}" title="Change price">${money(i.price,i.currency)}</button><small>${CYCLES[i.cycle]?.label||''}${pc&&pc.to>pc.from&&pc.daysAgo<=180?` <span class="up" title="Up from ${money(pc.from,i.currency)}">▲${pc.pct.toFixed(0)}%</span>`:''}</small></td>
+    <td class="num">${money(monthlyEq(i,SET))}</td>
+    <td><button class="numbtn plain" data-act="quick" data-id="${i.id}" data-f="date" title="Change next payment date">${dayChip(nextPay(i))}</button></td>
+    <td>${i.status==='trial'?dayChip(cancelBy(i)):cb&&daysUntil(cb)>=0?dayChip(cb):`<span class="muted small">${i.status==='cancelling'?'Cancelled':(+i.noticeValue?noticeText(i)+' notice':'Any time')}</span>`}</td>
+    <td>${statusPill(i)}${isUnused(i,SET)?`<span class="pill warn ghosty" title="Last used ${fmtDate(i.lastUsed)}">${i.lastUsed?'Unused '+daysSinceUse(i)+'d':'Unused'}</span>`:i.usage==='rarely'?'<span class="pill muted ghosty">Rarely used</span>':''}</td><td><button class="iconbtn" data-act="edit" data-id="${i.id}" aria-label="Edit ${esc(i.name)}" title="Edit all details">${icon('M4 20h4L19 9l-4-4L4 16zM14 6l4 4')}</button></td></tr>`;}).join('')}
+  </tbody></table></div>`:`<div class="empty"><p>No subscriptions match.</p><button class="btn" data-act="clearf">Clear filters</button></div>`}`;};
+AFTER.subscriptions=()=>{
+  const q=$('#q');q&&q.addEventListener('input',e=>{UI.q=e.target.value;scheduleRender();});
+  [['#fcat','cat'],['#fstatus','status'],['#fsort','sort']].forEach(([s,k])=>{const el=$(s);el&&el.addEventListener('change',e=>{UI[k]=e.target.value;render();});});
+  $$('tr[data-act="open"]').forEach(tr=>tr.addEventListener('keydown',e=>{if(e.key==='Enter')openItem(tr.dataset.id);}));
+};
+
+// ---------- EDIT-ALL GRID (live recalculation) ----------
+const ORIG={};const SQ={};
+const optList=(opts,val)=>opts.map(o=>{const [ov,ol]=Array.isArray(o)?o:[o,o];return `<option value="${esc(ov)}" ${String(val)===String(ov)?'selected':''}>${esc(ol)}</option>`;}).join('');
+function liveStatsHTML(scopeItems){const t=totals(ITEMS,SET);const sv=buildSavings(ITEMS,SET);
+  const due=buildEvents(ITEMS,30).filter(e=>e.kind==='payment'&&daysUntil(e.date)>=0).reduce((s,e)=>s+toBase(e.item.price,e.item.currency,SET),0);
+  const st=scopeItems?totals(scopeItems,SET):null;
+  return `<div><label>Per month</label><b>${money(t.monthly)}</b></div><div><label>Per year</label><b>${money(t.yearly)}</b></div><div><label>Due next 30 days</label><b>${money(due)}</b></div><div><label>Potential savings</label><b class="ok-t">${money(sv.total)}/yr</b></div>${st&&scopeItems.length!==ITEMS.length?`<div class="scope"><label>These ${scopeItems.length}</label><b>${money(st.monthly)}/mo</b></div>`:''}`;}
+function gridHTML(list){
+  return `<div class="table-wrap"><table class="list grid"><thead><tr><th>Name</th><th>Category</th><th>Status</th><th class="num">Price</th><th>Currency</th><th>Billed</th><th>Next payment</th><th>Trial ends</th><th>Min. term ends</th><th>Notice</th><th>Used</th><th>Last used</th><th class="num">Per month</th><th class="num">Per year</th><th><span class="sr">Open</span></th></tr></thead>
+  <tbody>${list.map(gridRow).join('')}</tbody></table></div>`;}
+function gridRow(i){const g=k=>`id="g_${i.id}_${k}" data-k="${k}"`;
+  return `<tr data-gid="${i.id}">
+   <td><input class="gname" ${g('name')} value="${esc(i.name)}" aria-label="Name"></td>
+   <td><select ${g('category')} aria-label="Category">${optList(CATEGORIES,i.category)}</select></td>
+   <td><select ${g('status')} aria-label="Status">${optList(Object.entries(STATUS),i.status)}</select></td>
+   <td class="num"><input class="gnum" type="number" step="0.01" min="0" ${g('price')} value="${esc(i.price)}" aria-label="Price"></td>
+   <td><select ${g('currency')} aria-label="Currency">${optList(Object.keys(SET.fx),i.currency)}</select></td>
+   <td><select ${g('cycle')} aria-label="Billing cycle">${optList(Object.entries(CYCLES).map(([k,v])=>[k,v.label]),i.cycle)}</select></td>
+   <td><input type="date" ${g('nextPayment')} value="${esc(nextPay(i)||i.nextPayment||'')}" aria-label="Next payment"></td>
+   <td><input type="date" ${g('trialEnds')} value="${esc(i.trialEnds||'')}" ${i.status==='trial'?'':'disabled'} aria-label="Trial ends"></td>
+   <td><input type="date" ${g('minTermEnd')} value="${esc(i.minTermEnd||'')}" aria-label="Minimum term ends"></td>
+   <td><div class="pair"><input class="gsmall" type="number" min="0" ${g('noticeValue')} value="${esc(i.noticeValue||0)}" aria-label="Notice amount"><select ${g('noticeUnit')} aria-label="Notice unit">${optList(['days','weeks','months'],i.noticeUnit||'days')}</select></div></td>
+   <td><select ${g('usage')} aria-label="How often used">${optList([['often','Often'],['sometimes','Sometimes'],['rarely','Rarely'],['never','Never']],i.usage)}</select></td>
+   <td><input type="date" ${g('lastUsed')} value="${esc(i.lastUsed||'')}" aria-label="Last used"></td>
+   <td class="num" data-cell="m">${money(monthlyEq(i,SET))}</td><td class="num" data-cell="y">${money(yearlyEq(i,SET))}</td>
+   <td><button class="iconbtn" data-act="open" data-id="${i.id}" aria-label="Open ${esc(i.name)}" title="Open details">${icon('M9 6l6 6-6 6')}</button></td></tr>`;}
+function refreshLive(){$$('[data-live]').forEach(el=>{const sc=el.dataset.live==='scope'&&GM.filter?ITEMS.filter(GM.filter):null;el.innerHTML=liveStatsHTML(sc);});
+  $$('tr[data-gid]').forEach(tr=>{const i=findItem(tr.dataset.gid);if(!i)return;const m=$('[data-cell="m"]',tr),y=$('[data-cell="y"]',tr);if(m)m.textContent=money(monthlyEq(i,SET));if(y)y.textContent=money(yearlyEq(i,SET));
+    const te=$('[data-k="trialEnds"]',tr);if(te)te.disabled=i.status!=='trial';});}
+function recordPrice(o,v,orig){o.price=v;if(orig==null||+orig===+v)return;const h=(o.priceHistory||[]).slice().sort((x,y)=>x.date<y.date?-1:1);
+  if(!h.length)h.push({date:o.startDate&&o.startDate<today()?o.startDate:addDays(today(),-1),price:+orig});
+  const last=h[h.length-1];if(last.date===today()){last.price=v;const prev=h[h.length-2];if(prev&&+prev.price===+v)h.pop();}else h.push({date:today(),price:v});o.priceHistory=h;}
+function gridEvent(e,commit){const el=e.target;if(!el.dataset||!el.dataset.k)return;const row=el.closest('[data-gid]');if(!row)return;
+  const idx=ITEMS.findIndex(x=>x.id===row.dataset.gid);if(idx<0)return;const i=ITEMS[idx];const k=el.dataset.k;let v=el.value;
+  if(k==='price'||k==='noticeValue'){const n=parseFloat(v);if(v===''||isNaN(n)){if(!commit)return;v=k==='price'?(ORIG[i.id]??i.price):0;el.value=v;}else v=Math.max(0,n);}
+  if(k==='name'&&!String(v).trim()){if(!commit)return;el.value=i.name;return;}
+  if((k==='nextPayment')&&!v){if(commit)el.value=i.nextPayment;return;}
+  if(k==='price'&&!(i.id in ORIG))ORIG[i.id]=+i.price;
+  const o=clone(i);
+  if(k==='price'){if(commit){recordPrice(o,v,ORIG[i.id]);delete ORIG[i.id];}else o.price=v;}else o[k]=v;
+  if(k==='status'&&v==='trial'&&!o.trialEnds)o.trialEnds=o.nextPayment;
+  ITEMS[idx]=o;refreshLive();
+  if(!row.closest('.modal'))return commit?queueSave(o):null;
+  scheduleRender();if(commit)queueSave(o);}
+function queueSave(o){const q=SQ[o.id]=SQ[o.id]||{};clearTimeout(q.t);q.t=setTimeout(()=>flushSave(o.id),350);}
+async function flushSave(id){const q=SQ[id];if(q.busy){q.again=true;return;}q.busy=true;const cur=findItem(id);if(cur)await save(clone(cur));q.busy=false;if(q.again){q.again=false;flushSave(id);}}
+document.addEventListener('input',e=>gridEvent(e,false));
+document.addEventListener('change',e=>gridEvent(e,true));
+const GM={filter:null,title:''};
+function gridScope(scope){if(!scope||scope==='all')return {f:null,t:'Edit all numbers'};
+  if(scope.startsWith('cat:')){const c=scope.slice(4);return {f:i=>i.category===c,t:'Edit numbers: '+c};}
+  if(scope.startsWith('month:')){const mth=scope.slice(6);const ids=new Set(buildEvents(ITEMS,420).filter(e=>e.kind==='payment'&&e.date.slice(0,7)===mth).map(e=>e.item.id));return {f:i=>ids.has(i.id),t:'Payments in '+parseD(mth+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'})};}
+  if(scope==='due30'){const ids=new Set(buildEvents(ITEMS,30).filter(e=>e.kind==='payment'&&daysUntil(e.date)>=0).map(e=>e.item.id));return {f:i=>ids.has(i.id),t:'Payments due in the next 30 days'};}
+  if(scope==='savings'){const ids=new Set(buildSavings(ITEMS,SET).list.map(o=>o.item.id));return {f:i=>ids.has(i.id),t:'Subscriptions with savings ideas'};}
+  return {f:null,t:'Edit all numbers'};}
+function openGridModal(scope){const s=gridScope(scope);GM.filter=s.f;GM.title=s.t;
+  const list=ITEMS.filter(s.f||(()=>true));
+  const m=openModal(s.t,`<p class="muted">Type a new value and everything recalculates straight away: totals, charts, reminders and savings. Changes save automatically.</p>
+   <div class="live" data-live="scope">${liveStatsHTML(s.f?list:null)}</div>${gridHTML(list)}`,`<button class="btn" data-act="gridadd">Add a row</button><span class="grow"></span><button class="btn primary" data-act="closemodal">Done</button>`,{wide:true});
+  m.querySelector('.modal').classList.add('xl');}
+function gridAdd(){const o={kind:'item',id:uid('i'),name:'New subscription',provider:'',category:'Other',type:'subscription',price:0,currency:SET.baseCurrency,cycle:'monthly',nextPayment:addDays(today(),30),startDate:today(),status:'active',usage:'often',noticeValue:0,noticeUnit:'days',minTermEnd:'',renewalMonths:null,trialEnds:'',autoRenew:true,priceHistory:[],docIds:[],cancellation:{status:'none'},createdAt:new Date().toISOString()};
+  ITEMS.push(o);save(o);
+  const tb=$('.modal table.grid tbody');if(tb){tb.insertAdjacentHTML('beforeend',gridRow(o));const n=$('#g_'+o.id+'_name');n&&(n.focus(),n.select());}
+  else{UI.subView='grid';render();setTimeout(()=>{const n=$('#g_'+o.id+'_name');n&&(n.focus(),n.select());},30);}}
+function histEditorSafe(id){historyEditor(id);}
+function historyEditor(id){const i=findItem(id);const rows=(i.priceHistory||[]).slice().sort((x,y)=>x.date<y.date?-1:1);if(!rows.length)rows.push({date:i.startDate||today(),price:+i.price});
+  const row=(h,k)=>`<li class="hrow"><input type="date" value="${esc(h.date)}" aria-label="Date"><input type="number" step="0.01" min="0" value="${esc(h.price)}" aria-label="Price"><button class="iconbtn" data-hdel aria-label="Remove">${icon('M6 6l12 12M18 6L6 18')}</button></li>`;
+  const m=openModal('Price history: '+i.name,`<p class="muted">Change any date or amount. The latest entry becomes the current price, and price-increase alerts and savings update to match.</p><ul class="hedit">${rows.map(row).join('')}</ul><button class="btn small" id="h_add">Add a price change</button>`,
+    `<button class="btn" data-act="closemodal">Cancel</button><button class="btn primary" id="h_save">Save</button>`);
+  const ul=$('.hedit',m);ul.addEventListener('click',e=>{if(e.target.closest('[data-hdel]')){if(ul.children.length>1)e.target.closest('li').remove();}});
+  $('#h_add',m).onclick=()=>{ul.insertAdjacentHTML('beforeend',row({date:today(),price:i.price}));const ins=$$('input',ul.lastElementChild);ins[1].focus();ins[1].select();};
+  $('#h_save',m).onclick=async()=>{const h=$$('li',ul).map(li=>{const [d,p]=$$('input',li);return {date:d.value,price:parseFloat(p.value)};}).filter(x=>x.date&&x.price>=0).sort((x,y)=>x.date<y.date?-1:1);
+    if(!h.length){toast('Add at least one price.','error');return;}const o=clone(i);o.priceHistory=h;o.price=h[h.length-1].price;await save(o);closeModal();openItem(o.id);toast('Price history saved');};}
+
+// ---------- ITEM DRAWER ----------
+function openItem(id){const i=findItem(id);if(!i)return;
+  const pc=priceChange(i);const ev=buildEvents([i],400).filter(e=>daysUntil(e.date)>=0);const nextEvents=[];const seenK={};
+  for(const e of ev){if(e.kind==='payment'){if((seenK.p=(seenK.p||0)+1)>3)continue;}nextEvents.push(e);if(nextEvents.length>=7)break;}
+  const cb=cancelBy(i);const docs=DOCS.filter(d=>d.itemId===i.id);const c=i.cancellation||{status:'none'};
+  const hist=(i.priceHistory||[]).slice().sort((a,b)=>a.date<b.date?1:-1);
+  openDrawer(`
+   <div class="dr-h">${avatar(i,'lg')}<div><h2>${esc(i.name)}</h2><p>${esc(i.provider||'')} · ${esc(i.category)} · ${statusPill(i)}</p></div><button class="iconbtn" data-act="closedrawer" aria-label="Close">${icon('M6 6l12 12M18 6L6 18')}</button></div>
+   <div class="dr-price"><button class="numbtn big" data-act="quick" data-id="${i.id}" title="Change price"><strong>${money(i.price,i.currency)}</strong>${icon('M4 20h4L19 9l-4-4L4 16zM14 6l4 4','pen')}</button><span>${cycleWord(i.cycle)}</span>${i.currency!==SET.baseCurrency?`<em>≈ ${money(toBase(i.price,i.currency,SET))}</em>`:''}<span class="sep"></span><span>${money(yearlyEq(i,SET))} per year</span></div>
+   ${pc?`<div class="note-box ${pc.to>pc.from?'warn':'ok'}">${pc.to>pc.from?'Price went up':'Price went down'} ${Math.abs(pc.pct).toFixed(1)}% on ${fmtDate(pc.date)}: ${money(pc.from,i.currency)} → ${money(pc.to,i.currency)}.</div>`:''}
+   ${i.status!=='cancelled'&&i.status!=='cancelling'?`<div class="deadline-box">${cb&&daysUntil(cb)>=0?`<div><label>Last day to cancel</label><b>${fmtDate(cb)}</b><small>${whenText(daysUntil(cb))} · notice ${noticeText(i)}</small></div>`:`<div><label>If you cancel today</label><b>Ends ${fmtDate(earliestEnd(i))}</b><small>${cb?'Deadline passed '+fmtDate(cb)+' · ':''}notice ${noticeText(i)}</small></div>`}
+     <div class="row">${cb&&daysUntil(cb)>=0?`<a class="btn small" target="_blank" rel="noopener" href="${gcalLink('Cancel '+i.name+' (last day)',cb,'Last day to cancel '+i.name+'. Notice: '+noticeText(i))}">Add to Google Calendar</a>`:''}<button class="btn small primary" data-act="startcancel" data-id="${i.id}">Cancel this</button></div></div>`:''}
+   ${c.status!=='none'?`<div class="note-box info"><b>Cancellation: ${({draft:'letter drafted',sent:'sent, waiting for confirmation',confirmed:'confirmed'})[c.status]||c.status}</b>${c.sentAt?` · sent ${fmtDate(c.sentAt)} by ${esc(c.method||'')}`:''}${c.confirmedAt?` · confirmed ${fmtDate(c.confirmedAt)}${c.confirmationNo?' (#'+esc(c.confirmationNo)+')':''}`:''}${c.endsAt?` · ends ${fmtDate(c.endsAt)}`:''} <a href="#cancel" data-act="startcancel" data-id="${i.id}">Open</a></div>`:''}
+   <h3>Coming up</h3>
+   <ul class="mini-ev">${nextEvents.map(e=>`<li class="${e.kind}"><span>${fmtDate(e.date)}</span><b>${evLabel(e.kind)}</b><em>${whenText(daysUntil(e.date))}</em></li>`).join('')||'<li class="muted">Nothing scheduled.</li>'}</ul>
+   <h3>Details</h3>
+   <dl class="facts">
+    <dt>Type</dt><dd>${i.type==='contract'?'Contract':'Subscription'}</dd>
+    <dt>Billing</dt><dd>${CYCLES[i.cycle]?.label} · next ${fmtDate(nextPay(i))}</dd>
+    ${i.status==='trial'?`<dt>Trial ends</dt><dd>${fmtDate(i.trialEnds)}</dd>`:''}
+    <dt>Started</dt><dd>${fmtDate(i.startDate)}</dd>
+    ${i.minTermEnd?`<dt>Minimum term ends</dt><dd>${fmtDate(i.minTermEnd)}${daysUntil(i.minTermEnd)<0?' (over)':''}</dd>`:''}
+    <dt>After that</dt><dd>${i.minTermEnd?(+i.renewalMonths>1?'Renews for '+i.renewalMonths+' months':'Month to month'):(['monthly','weekly'].includes(i.cycle)?'Runs until cancelled':'Renews each '+CYCLES[i.cycle].label.toLowerCase().replace('every ','').replace('ly',''))}</dd>
+    <dt>Notice period</dt><dd>${noticeText(i)}${i.endOfMonth?', to the end of a month':''}</dd>
+    <dt>Payment method</dt><dd>${esc(i.paymentMethod||'—')}</dd>
+    <dt>Customer no.</dt><dd>${esc(i.customerNo||'—')}</dd>
+    <dt>Last used</dt><dd><span class="${isUnused(i,SET)?'up':''}">${i.lastUsed?fmtDate(i.lastUsed)+' ('+whenText(daysUntil(i.lastUsed))+')':'Not recorded'}</span> <button class="btn small" data-act="usednow" data-id="${i.id}">I used it today</button></dd>
+    <dt>How often used</dt><dd><div class="seg" role="group" aria-label="Usage">${['often','sometimes','rarely','never'].map(u=>`<button class="${i.usage===u?'on':''}" data-act="usage" data-id="${i.id}" data-u="${u}">${u[0].toUpperCase()+u.slice(1)}</button>`).join('')}</div></dd>
+    ${i.cancelEmail||i.cancelAddress?`<dt>Cancel to</dt><dd>${esc(i.cancelEmail||'')}${i.cancelEmail&&i.cancelAddress?'<br>':''}${esc(i.cancelAddress||'')}</dd>`:''}
+   </dl>
+   ${i.notes?`<p class="notes">${esc(i.notes)}</p>`:''}
+   <h3>Price history <span class="row"><button class="link" data-act="pricechange" data-id="${i.id}">Record a change</button><button class="link" data-act="histedit" data-id="${i.id}">Edit history</button></span></h3>
+   <ul class="hist">${hist.map((h,k)=>{const prev=hist[k+1];const d=prev?h.price-prev.price:0;return `<li><span>${fmtDate(h.date)}</span><b>${money(h.price,i.currency)}</b>${prev&&d?`<em class="${d>0?'up':'down'}">${d>0?'+':''}${money(d,i.currency)}</em>`:''}</li>`;}).join('')||'<li class="muted">No changes recorded.</li>'}</ul>
+   <h3>Documents</h3>
+   <ul class="docs-mini">${docs.map(d=>`<li><a href="#reader" data-act="opendoc" data-id="${d.id}">${icon('M7 3h7l5 5v13H7zM14 3v5h5')}${esc(d.name)}</a>${d.ai?'<span class="pill info">Summarised</span>':''}</li>`).join('')||'<li class="muted">None yet.</li>'}<li><button class="btn small" data-act="read" data-item="${i.id}">Upload contract or letter</button></li></ul>
+   <div class="dr-foot"><button class="btn danger ghost" data-act="delitem" data-id="${i.id}">Delete</button><span class="grow"></span><button class="btn primary" data-act="edit" data-id="${i.id}">Edit</button></div>`);
+}
+
+// ---------- ITEM FORM ----------
+const F_ITEM=[
+  {k:'name',l:'Name',req:1,ph:'e.g. Netflix Standard'},{k:'provider',l:'Provider',ph:'e.g. Netflix'},
+  {k:'category',l:'Category',t:'select',o:CATEGORIES},{k:'type',l:'Type',t:'select',o:[['subscription','Subscription (cancel any time / per period)'],['contract','Contract with minimum term']]},
+  {k:'price',l:'Price',t:'number',req:1,step:'0.01'},{k:'currency',l:'Currency',t:'select',o:()=>Object.keys(SET.fx)},
+  {k:'cycle',l:'Billed',t:'select',o:Object.entries(CYCLES).map(([k,v])=>[k,v.label])},{k:'nextPayment',l:'Next payment',t:'date',req:1},
+  {k:'status',l:'Status',t:'select',o:Object.entries(STATUS)},{k:'trialEnds',l:'Free trial ends',t:'date',h:'Only for free trials'},
+  {k:'startDate',l:'Start date',t:'date'},{k:'minTermEnd',l:'Minimum term ends',t:'date',h:'Leave empty if you can cancel any time'},
+  {k:'renewalMonths',l:'Then renews for (months)',t:'number',h:'Empty or 1 = continues month to month'},{k:'notice',l:'Notice period',t:'notice'},{k:'endOfMonth',l:'When does a cancellation take effect?',t:'check',cl:'Only at the end of a month'},
+  {k:'usage',l:'How often do you use it?',t:'select',o:[['often','Often'],['sometimes','Sometimes'],['rarely','Rarely'],['never','Never']]},{k:'lastUsed',l:'Last used',t:'date',h:'Subwise suggests cancelling things you haven\u2019t used for a while'},{k:'paymentMethod',l:'Payment method',ph:'e.g. PayPal, Visa •• 4821'},
+  {k:'customerNo',l:'Customer / contract number'},{k:'cancelEmail',l:'Cancellation email',t:'email'},
+  {k:'cancelAddress',l:'Cancellation postal address',t:'area',w:'full'},{k:'notes',l:'Notes',t:'area',w:'full'}];
+function fieldHTML(f,v){const id='f_'+f.k;const val=v[f.k]??'';let inp;
+  if(f.t==='select'){const opts=typeof f.o==='function'?f.o():f.o;inp=`<select id="${id}">${opts.map(o=>{const [ov,ol]=Array.isArray(o)?o:[o,o];return `<option value="${esc(ov)}" ${String(val)===String(ov)?'selected':''}>${esc(ol)}</option>`;}).join('')}</select>`;}
+  else if(f.t==='area')inp=`<textarea id="${id}" rows="2" placeholder="${esc(f.ph||'')}">${esc(val)}</textarea>`;
+  else if(f.t==='check')inp=`<label class="check"><input type="checkbox" id="${id}" ${val?'checked':''}> ${esc(f.cl||'Yes')}</label>`;
+  else if(f.t==='notice')inp=`<div class="pair"><input id="f_noticeValue" type="number" min="0" value="${esc(v.noticeValue??0)}" aria-label="Notice amount"><select id="f_noticeUnit" aria-label="Notice unit">${['days','weeks','months'].map(u=>`<option ${v.noticeUnit===u?'selected':''}>${u}</option>`).join('')}</select></div>`;
+  else inp=`<input id="${id}" type="${f.t||'text'}" ${f.step?`step="${f.step}"`:''} value="${esc(val)}" placeholder="${esc(f.ph||'')}" ${f.req?'required':''}>`;
+  return `<div class="field ${f.w==='full'?'full':''}"><label for="${f.t==='notice'?'f_noticeValue':id}">${esc(f.l)}${f.req?' <i>*</i>':''}</label>${inp}${f.h?`<small>${esc(f.h)}</small>`:''}</div>`;}
+function readFields(root,fields){const o={};for(const f of fields){if(f.t==='notice'){o.noticeValue=+$('#f_noticeValue',root).value||0;o.noticeUnit=$('#f_noticeUnit',root).value;continue;}
+  const el=$('#f_'+f.k,root);if(!el)continue;o[f.k]=f.t==='check'?el.checked:f.t==='number'?(el.value===''?null:+el.value):el.value.trim();}return o;}
+function openItemForm(existing,prefill,afterSave){
+  const isNew=!existing;const v=Object.assign({category:'Streaming',type:'subscription',currency:SET.baseCurrency,cycle:'monthly',status:'active',usage:'often',noticeValue:0,noticeUnit:'days',nextPayment:addDays(today(),30),startDate:today()},existing||{},prefill||{});
+  const m=openModal(isNew?'Add subscription':'Edit '+v.name,`<form id="itemform" class="form-grid" novalidate>${F_ITEM.map(f=>fieldHTML(f,v)).join('')}</form>`,
+    `<button class="btn" data-act="closemodal">Cancel</button><button class="btn primary" id="saveitem">${isNew?'Add':'Save changes'}</button>`,{wide:true});
+  $('#saveitem',m).onclick=async()=>{const o=readFields(m,F_ITEM);
+    if(!o.name||o.price==null||isNaN(o.price)||!o.nextPayment){toast('Fill in name, price and next payment.','error');return;}
+    const obj=Object.assign({kind:'item',priceHistory:[],docIds:[],cancellation:{status:'none'},createdAt:new Date().toISOString()},existing?clone(existing):{},o);
+    obj.id=obj.id||uid('i');obj.autoRenew=true;
+    const hist=obj.priceHistory||[];const last=hist.slice().sort((a,b)=>a.date<b.date?-1:1).pop();
+    if(!last)hist.push({date:obj.startDate||today(),price:+obj.price});else if(+last.price!==+obj.price)hist.push({date:today(),price:+obj.price});
+    obj.priceHistory=hist;
+    if(await save(obj)){closeModal();toast(isNew?'Added '+obj.name:'Saved');if(afterSave)afterSave(obj);else if(!isNew)openItem(obj.id);}};
+  const st=$('#f_status',m);const tr=$('#f_trialEnds',m).closest('.field');const syncT=()=>tr.style.display=st.value==='trial'?'':'none';st.onchange=syncT;syncT();
+}
+function quickEdit(id,focus){const i=findItem(id);if(!i)return;
+  const m=openModal('Change numbers: '+i.name,`<div class="form-grid">
+   <div class="field"><label for="q_price">Price</label><input id="q_price" type="number" step="0.01" min="0" value="${esc(i.price)}"></div>
+   <div class="field"><label for="q_cur">Currency</label><select id="q_cur">${Object.keys(SET.fx).map(c=>`<option ${i.currency===c?'selected':''}>${c}</option>`).join('')}</select></div>
+   <div class="field"><label for="q_cycle">Billed</label><select id="q_cycle">${Object.entries(CYCLES).map(([k,v])=>`<option value="${k}" ${i.cycle===k?'selected':''}>${v.label}</option>`).join('')}</select></div>
+   <div class="field"><label for="q_next">Next payment</label><input id="q_next" type="date" value="${esc(nextPay(i)||i.nextPayment||'')}"></div>
+   <div class="field"><label for="q_nv">Notice period</label><div class="pair"><input id="q_nv" type="number" min="0" value="${esc(i.noticeValue||0)}"><select id="q_nu" aria-label="Notice unit">${['days','weeks','months'].map(u=>`<option ${i.noticeUnit===u?'selected':''}>${u}</option>`).join('')}</select></div></div>
+   <div class="field"><label for="q_min">Minimum term ends</label><input id="q_min" type="date" value="${esc(i.minTermEnd||'')}"></div>
+   <div class="field full" id="q_effw" hidden><label for="q_eff">New price applies from</label><input id="q_eff" type="date" value="${today()}"><small>Saved to the price history, so Subwise can show the increase or decrease.</small></div>
+  </div>`,`<button class="btn" data-act="closemodal">Cancel</button><button class="btn" id="q_all">All details\u2026</button><button class="btn primary" id="q_save">Save</button>`);
+  const p=$('#q_price',m);const effw=$('#q_effw',m);p.addEventListener('input',()=>{effw.hidden=+p.value===+i.price;});
+  setTimeout(()=>{const f=focus==='date'?$('#q_next',m):p;f.focus();f.select&&f.select();},40);
+  $('#q_all',m).onclick=()=>{closeModal();openItemForm(i);};
+  const go=async()=>{const np=parseFloat(p.value);if(!(np>=0)){toast('Enter a price of 0 or more.','error');return;}
+    const o=clone(i);o.currency=$('#q_cur',m).value;o.cycle=$('#q_cycle',m).value;o.nextPayment=$('#q_next',m).value||o.nextPayment;
+    o.noticeValue=+$('#q_nv',m).value||0;o.noticeUnit=$('#q_nu',m).value;o.minTermEnd=$('#q_min',m).value;
+    if(np!==+i.price){o.priceHistory=o.priceHistory||[];if(!o.priceHistory.length)o.priceHistory.push({date:o.startDate||addDays(today(),-1),price:+i.price});o.priceHistory.push({date:$('#q_eff',m).value||today(),price:np});o.price=np;}
+    if(await save(o)){closeModal();toast('Saved '+i.name);if($('#drawer').classList.contains('open'))openItem(o.id);}};
+  $('#q_save',m).onclick=go;m.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();go();}});}
+function priceChangeForm(id){const i=findItem(id);const m=openModal('Record a price change for '+i.name,`<div class="form-grid">
+  <div class="field"><label for="pc_p">New price (${esc(i.currency)})</label><input id="pc_p" type="number" step="0.01" value="${esc(i.price)}"></div>
+  <div class="field"><label for="pc_d">Effective from</label><input id="pc_d" type="date" value="${today()}"></div></div>
+  <p class="note">Current price: ${money(i.price,i.currency)} ${cycleWord(i.cycle)}.</p>`,`<button class="btn" data-act="closemodal">Cancel</button><button class="btn primary" id="pc_save">Save</button>`);
+  $('#pc_save',m).onclick=async()=>{const p=+$('#pc_p',m).value;const d=$('#pc_d',m).value||today();if(!(p>=0))return;const o=clone(i);o.priceHistory=(o.priceHistory||[]);if(!o.priceHistory.length)o.priceHistory.push({date:o.startDate||addDays(d,-1),price:+o.price});o.priceHistory.push({date:d,price:p});o.price=p;await save(o);closeModal();openItem(o.id);toast('Price change recorded');};}
+
+// ---------- CALENDAR ----------
+VIEWS.calendar=()=>{
+  const base=UI.calMonth||today().slice(0,7);const first=parseD(base+'-01');const y=first.getFullYear(),mo=first.getMonth();
+  const startDow=(first.getDay()+6)%7;const days=new Date(y,mo+1,0).getDate();
+  const ev=buildEvents(ITEMS,500);const byDay={};ev.forEach(e=>(byDay[e.date]=byDay[e.date]||[]).push(e));
+  let cells='';for(let k=0;k<startDow;k++)cells+='<div class="cd pad"></div>';
+  for(let d=1;d<=days;d++){const ds=isoOf(new Date(y,mo,d));const es=byDay[ds]||[];cells+=`<div class="cd ${ds===today()?'today':''} ${ds<today()?'past':''}"><span class="dn">${d}</span>${es.slice(0,3).map(e=>`<button class="ce ${e.kind}" data-act="open" data-id="${e.item.id}" title="${esc(evLabel(e.kind)+': '+e.item.name)}">${esc(e.item.name)}</button>`).join('')}${es.length>3?`<span class="more">+${es.length-3} more</span>`:''}</div>`;}
+  const up=ev.filter(e=>e.kind!=='payment'&&daysUntil(e.date)>=0&&daysUntil(e.date)<=120);
+  return `<div class="grid-cal">
+   <div class="card"><div class="card-h cal-h"><button class="iconbtn" data-act="calnav" data-d="-1" aria-label="Previous month">${icon('M15 6l-6 6 6 6')}</button><h2>${first.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</h2><button class="iconbtn" data-act="calnav" data-d="1" aria-label="Next month">${icon('M9 6l6 6-6 6')}</button><button class="btn small" data-act="calnav" data-d="0">Today</button></div>
+     <div class="legend"><span class="lg payment">Payment</span><span class="lg deadline">Last day to cancel</span><span class="lg renewal">Renewal / term ends</span><span class="lg trial">Trial ends</span><span class="lg ends">Cancelled, ends</span></div>
+     <div class="cal">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d=>`<div class="cw">${d}</div>`).join('')}${cells}</div></div>
+   <div class="card"><div class="card-h"><h2>Renewals & deadlines, next 4 months</h2></div>
+     <ul class="dl-list">${up.map(e=>{const d=daysUntil(e.date);return `<li class="${e.kind}"><div class="dl-d">${dayChip(e.date)}</div><div class="dl-m" data-act="open" data-id="${e.item.id}"><b>${esc(e.item.name)}</b><small>${evLabel(e.kind)}${e.kind==='deadline'?' · notice '+noticeText(e.item):''}</small></div><a class="iconbtn" title="Add to Google Calendar" aria-label="Add to Google Calendar" target="_blank" rel="noopener" href="${gcalLink(evLabel(e.kind)+': '+e.item.name,e.date,e.item.name+' — '+evLabel(e.kind)+'. Tracked in Subwise.')}">${icon('M4 5h16v15H4zM4 9h16M12 12v5M9.5 14.5h5')}</a></li>`;}).join('')||'<li class="muted">Nothing in the next 4 months.</li>'}</ul>
+     <div class="row pad-t"><button class="btn small" data-act="copyics">Copy all as calendar file (.ics)</button></div>
+     <p class="note">Paste the copied text into a file named <code>subwise.ics</code> and open it to import every deadline into Apple Calendar, Outlook or Google Calendar.</p></div></div>`;};
+function gcalLink(title,date,details){const a=date.replace(/-/g,'');const b=addDays(date,1).replace(/-/g,'');return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+'&dates='+a+'/'+b+'&details='+encodeURIComponent(details||'');}
+function buildICS(){const ev=buildEvents(ITEMS,400).filter(e=>e.kind!=='payment'&&daysUntil(e.date)>=0);const st=new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z';
+  const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Subwise//EN','CALSCALE:GREGORIAN'];
+  ev.forEach((e,k)=>{lines.push('BEGIN:VEVENT','UID:'+e.item.id+'-'+e.kind+'-'+e.date+'@subwise','DTSTAMP:'+st,'DTSTART;VALUE=DATE:'+e.date.replace(/-/g,''),'DTEND;VALUE=DATE:'+addDays(e.date,1).replace(/-/g,''),
+    'SUMMARY:'+(evLabel(e.kind)+': '+e.item.name).replace(/[,;]/g,' '),'DESCRIPTION:'+('Notice period: '+noticeText(e.item)).replace(/[,;]/g,' '));
+    if(e.kind==='deadline'||e.kind==='trial')lines.push('BEGIN:VALARM','TRIGGER:-P3D','ACTION:DISPLAY','DESCRIPTION:Reminder','END:VALARM');lines.push('END:VEVENT');});
+  lines.push('END:VCALENDAR');return lines.join('\r\n');}
+
+// ---------- NOTIFICATIONS ----------
+VIEWS.notifications=()=>{
+  const all=buildAlerts(ITEMS,SET);const list=all.filter(a=>UI.showDismissed?SET.dismissed[a.key]:!SET.dismissed[a.key]);const N=SET.notify;
+  const counts={};all.filter(a=>!SET.dismissed[a.key]).forEach(a=>counts[a.type]=(counts[a.type]||0)+1);
+  return `<div class="grid-note">
+  <div><div class="toolbar"><div class="chips">${['unused','payment','trial','deadline','renewal','price','cancel'].map(t=>`<span class="tchip t-${t}">${typeLabel(t)} <b>${counts[t]||0}</b></span>`).join('')}</div><span class="grow"></span>
+    <label class="check small"><input type="checkbox" id="showdis" ${UI.showDismissed?'checked':''}> Show dismissed</label><button class="btn small" data-act="digest">Copy as email summary</button></div>
+   ${list.length?`<ul class="alerts">${list.map(a=>`<li class="alert sev-${a.sev}"><span class="sev">${sevLabel[a.sev]}</span><div data-act="open" data-id="${a.item.id}"><span class="atype">${typeLabel(a.type)} · ${fmtDate(a.date)}</span><b>${esc(a.title)}</b><p>${esc(a.body)}</p></div><div class="a-act">${a.type==='unused'?`<button class="btn small" data-act="usednow" data-id="${a.item.id}">I still use it</button>`:''}${a.type==='deadline'||a.type==='trial'||a.type==='price'||a.type==='unused'?`<button class="btn small" data-act="startcancel" data-id="${a.item.id}">Cancel</button>`:''}<button class="btn small ghost" data-act="${UI.showDismissed?'undismiss':'dismiss'}" data-key="${esc(a.key)}">${UI.showDismissed?'Restore':'Dismiss'}</button></div></li>`).join('')}</ul>`:`<div class="empty"><p>${UI.showDismissed?'No dismissed notifications.':'You\u2019re all caught up.'}</p></div>`}</div>
+  <aside class="card"><div class="card-h"><h2>When to remind me</h2></div>
+   <div class="form-grid one">
+    <div class="field"><label for="n_pay">Upcoming payments</label><div class="pair"><input id="n_pay" type="number" min="0" max="30" value="${N.payments}"><span>days before</span></div></div>
+    <div class="field"><label for="n_trial">Free trial endings</label><div class="pair"><input id="n_trial" type="number" min="0" max="30" value="${N.trials}"><span>days before</span></div></div>
+    <div class="field"><label for="n_dl">Cancellation deadlines</label><input id="n_dl" value="${N.deadlines.join(', ')}"><small>Days before the deadline, e.g. 30, 14, 7, 1</small></div>
+    <div class="field"><label for="n_ren">Renewals</label><div class="pair"><input id="n_ren" type="number" min="0" max="120" value="${N.renewals}"><span>days before</span></div></div>
+    <div class="field"><label for="n_unused">Not used for</label><div class="pair"><input id="n_unused" type="number" min="7" max="365" value="${N.unusedDays||45}"><span>days, then suggest cancelling</span></div></div>
+    <label class="check"><input type="checkbox" id="n_price" ${N.priceIncrease?'checked':''}> Tell me about price increases</label>
+    <button class="btn primary" data-act="savenotify">Save reminder settings</button>
+   </div>
+   <p class="note">Reminders show here, on your dashboard and as a badge in the menu. To be reminded on your phone too, add deadlines to your calendar from <a href="#calendar" data-go="calendar">Renewals & deadlines</a>.</p></aside></div>`;};
+AFTER.notifications=()=>{const c=$('#showdis');c&&(c.onchange=e=>{UI.showDismissed=e.target.checked;render();});};
+function digestText(){const al=activeAlerts();const t=totals(ITEMS,SET);
+  return `Subwise summary for ${who()}, ${fmtDate(today())}\n\nRecurring costs: ${money(t.monthly)} per month, ${money(t.yearly)} per year.\n\n`+(al.length?al.map(a=>`• [${sevLabel[a.sev]}] ${a.title}\n  ${a.body}`).join('\n\n'):'Nothing needs your attention.')+'\n';}
+
+// ---------- AI CONTRACT READER ----------
+VIEWS.reader=()=>{
+  const docs=DOCS.slice().sort((a,b)=>(b.uploadedAt||'')<(a.uploadedAt||'')?-1:1);
+  if(!UI.docId&&docs.length)UI.docId=docs[0].id;const d=DOCS.find(x=>x.id===UI.docId);
+  return `<div class="grid-reader">
+   <div class="col">
+    <label class="drop" for="docfile" id="dropzone">${icon('M12 16V4M7 9l5-5 5 5M4 20h16')}<b>Upload a contract, price letter or bill</b><span>PDF, Word (.docx), photo or text file. AI reads it and pulls out prices, dates and conditions.</span><input id="docfile" type="file" accept=".pdf,.docx,.txt,.md,image/png,image/jpeg,image/webp"></label>
+    ${SAMPLE?'':`<p class="note warn-t">AI reading needs Claude. Open this app in Claude to use it; uploads still save the text.</p>`}
+    <ul class="doclist">${docs.map(x=>{const it=findItem(x.itemId);return `<li class="${x.id===UI.docId?'on':''}" data-act="opendoc" data-id="${x.id}"><span class="dic">${icon('M7 3h7l5 5v13H7zM14 3v5h5')}</span><div><b>${esc(x.name)}</b><small>${it?esc(it.name):'Not linked'} · ${fmtDate(x.uploadedAt)}</small></div>${x.ai?'<span class="pill info">AI</span>':''}</li>`;}).join('')||'<li class="muted pad">No documents yet.</li>'}</ul>
+   </div>
+   <div class="card doc-panel">${d?docPanel(d):`<div class="empty"><p>Upload a contract to see a plain-language summary, the key terms and possible risks.</p></div>`}</div></div>`;};
+function docPanel(d){const it=findItem(d.itemId);const a=d.ai;const tab=UI.docTab;
+  return `<div class="dp-h"><div><h2>${esc(d.name)}</h2><p>${it?`Linked to <a href="#" data-act="open" data-id="${it.id}">${esc(it.name)}</a>`:'Not linked to a subscription'} · ${d.size?(d.size/1024).toFixed(0)+' KB':''}${d.assetId?` · <a href="/_blob/${esc(d.assetId)}" target="_blank" rel="noopener">Open original</a>`:''}</p></div>
+   <div class="row">${!it?`<button class="btn small" data-act="linkdoc" data-id="${d.id}">Link or create subscription</button>`:''}<button class="btn small ghost danger" data-act="deldoc" data-id="${d.id}">Delete</button></div></div>
+   <div class="tabs" role="tablist">${[['summary','Summary & risks'],['ask','Ask about it'],['text','Extracted text']].map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" class="${tab===k?'on':''}" data-act="doctab" data-t="${k}">${l}</button>`).join('')}</div>
+   <div class="tabbody">${tab==='summary'?docSummary(d):tab==='ask'?docAsk(d):`<pre class="doctext">${esc(d.text||'No text could be extracted.')}</pre>`}</div>`;}
+function docSummary(d){const a=d.ai;
+  if(UI.busy['an-'+d.id])return `<div class="empty"><div class="spinner"></div><p>Reading the document\u2026</p></div>`;
+  if(!a)return `<div class="empty"><p>This document hasn\u2019t been summarised yet.</p>${SAMPLE?`<button class="btn primary" data-act="analyze" data-id="${d.id}">Summarise with AI</button>`:'<p class="muted">AI is available when you open this app in Claude.</p>'}</div>`;
+  const sevOrder={high:0,medium:1,low:2};
+  return `<div class="sum-block"><h3>In plain words</h3><p class="lead">${esc(a.summary)}</p></div>
+   ${(a.terms||[]).length?`<div class="sum-block"><h3>Key terms</h3><dl class="terms">${a.terms.map(t=>`<dt>${esc(t.label)}</dt><dd>${esc(t.value)}</dd>`).join('')}</dl></div>`:''}
+   ${(a.plain||[]).length?`<div class="sum-block"><h3>What this means for you</h3><ul class="plain">${a.plain.map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div>`:''}
+   ${(a.risks||[]).length?`<div class="sum-block"><h3>Watch out for</h3><ul class="risks">${a.risks.slice().sort((x,y)=>(sevOrder[x.severity]??3)-(sevOrder[y.severity]??3)).map(r=>`<li class="r-${esc(r.severity)}"><span class="pill ${r.severity==='high'?'crit':r.severity==='medium'?'warn':'muted'}">${esc(r.severity)}</span><div><b>${esc(r.term)}</b><p>${esc(r.explanation)}</p></div></li>`).join('')}</ul></div>`:''}
+   <p class="note">AI summaries can miss things. Check important dates and amounts against the document. This isn\u2019t legal advice.${SAMPLE?` <button class="link" data-act="analyze" data-id="${d.id}">Summarise again</button>`:''}</p>`;}
+function docAsk(d){const chat=UI.chats[d.id]||[];
+  if(!SAMPLE)return '<div class="empty"><p>Questions need AI, which works when you open this app in Claude.</p></div>';
+  const sugg=['Can I cancel early?','What happens if I miss the deadline?','Are there any hidden fees?','Can they raise the price?'];
+  return `<div class="chat" id="chatlog">${chat.map(m=>`<div class="msg ${m.role}">${m.role==='assistant'?fmtAI(m.content):esc(m.content)}</div>`).join('')||`<div class="sugg">${sugg.map(s=>`<button class="btn small" data-act="asksugg" data-q="${esc(s)}">${esc(s)}</button>`).join('')}</div>`}</div>
+   <form class="ask" id="askform"><input id="askq" placeholder="Ask anything about this document" autocomplete="off"><button class="btn primary" ${UI.busy['ask-'+d.id]?'disabled':''}>Ask</button></form>`;}
+function fmtAI(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^[-•] (.*)$/gm,'<span class="li">$1</span>').replace(/\n/g,'<br>');}
+AFTER.reader=()=>{const f=$('#docfile');f&&(f.onchange=e=>{const file=e.target.files[0];e.target.value='';if(file)handleUpload(file,UI.pendingItem||null);});
+  const dz=$('#dropzone');if(dz){dz.ondragover=e=>{e.preventDefault();dz.classList.add('over');};dz.ondragleave=()=>dz.classList.remove('over');dz.ondrop=e=>{e.preventDefault();dz.classList.remove('over');const file=e.dataTransfer.files[0];if(file)handleUpload(file,UI.pendingItem||null);};}
+  const af=$('#askform');af&&(af.onsubmit=e=>{e.preventDefault();const q=$('#askq').value.trim();if(q)askDoc(UI.docId,q);});
+  const cl=$('#chatlog');cl&&(cl.scrollTop=cl.scrollHeight);};
+
+async function extractFile(file){const ext=(file.name.split('.').pop()||'').toLowerCase();const out={text:'',images:[],pages:0};
+  if(ext==='pdf'||file.type==='application/pdf'){if(!window.pdfjsLib)throw new Error('The PDF reader didn\u2019t load. Reload the page and try again.');
+    try{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}catch(e){}
+    const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:new Uint8Array(buf)}).promise;out.pages=pdf.numPages;
+    for(let p=1;p<=Math.min(pdf.numPages,40);p++){const pg=await pdf.getPage(p);const tc=await pg.getTextContent();out.text+=tc.items.map(x=>x.str+(x.hasEOL?'\n':' ')).join('')+'\n\n';}
+    if(out.text.replace(/\s/g,'').length<150){for(let p=1;p<=Math.min(pdf.numPages,4);p++){const pg=await pdf.getPage(p);const vp=pg.getViewport({scale:1.6});const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;out.images.push(await new Promise(r=>c.toBlob(r,'image/png')));}}
+  }else if(ext==='docx'){if(!window.mammoth)throw new Error('The Word reader didn\u2019t load. Reload the page and try again.');const r=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});out.text=r.value;}
+  else if(ext==='doc'){throw new Error('Old .doc files can\u2019t be read. Save it as .docx or PDF and upload again.');}
+  else if(file.type.startsWith('image/')){out.images.push(file);}
+  else out.text=await file.text();
+  out.text=out.text.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();return out;}
+
+async function handleUpload(file,itemId){
+  if(file.size>25*1024*1024){toast('That file is larger than 25 MB.','error');return;}
+  go('reader');const tid=toast('Reading '+file.name+'\u2026','info',0);
+  let ex;try{ex=await extractFile(file);}catch(e){dismissToast(tid);toast(e.message||'Couldn\u2019t read that file.','error');return;}
+  const doc={id:uid('d'),kind:'document',name:file.name,size:file.size,mime:file.type,itemId:itemId||null,uploadedAt:today(),text:ex.text.slice(0,120000),assetId:null,ocr:!ex.text&&ex.images.length>0};
+  if(ASSETS&&(file.type==='application/pdf'||file.type.startsWith('image/'))&&file.size<=20*1024*1024){try{const r=await ASSETS.upload(file,{type:file.type});doc.assetId=r.id;}catch(e){}}
+  UI.docId=doc.id;UI.docTab='summary';UI.pendingItem=null;await save(doc);dismissToast(tid);
+  if(!ex.text&&!ex.images.length){toast('No text found in that file.','error');return;}
+  if(ex.images.length&&!ex.text&&(!SAMPLE||!AI_IMAGES)){toast('This looks like a scan. Reading scans needs AI with image support in Claude.','error');return;}
+  if(SAMPLE)analyzeDoc(doc.id,ex.images);else toast('Saved. Open this app in Claude to have AI read it.');}
+
+const AI_SCHEMA=`{
+ "docType": "contract" | "price_change" | "invoice" | "other",
+ "item": {"name": string, "provider": string, "category": one of ${JSON.stringify(CATEGORIES)}, "type": "subscription"|"contract", "price": number (recurring price per billing period, no symbols), "currency": ISO code, "cycle": "weekly"|"monthly"|"quarterly"|"half-yearly"|"yearly", "nextPayment": "YYYY-MM-DD"|null, "startDate": "YYYY-MM-DD"|null, "minTermEnd": "YYYY-MM-DD"|null, "renewalMonths": number|null (months it renews for after the minimum term; null if it then runs month to month or indefinitely), "noticeValue": number, "noticeUnit": "days"|"weeks"|"months", "trialEnds": "YYYY-MM-DD"|null, "customerNo": string|null, "cancelEmail": string|null, "cancelAddress": string|null},
+ "priceChange": {"oldPrice": number, "newPrice": number, "effectiveDate": "YYYY-MM-DD"|null} | null,
+ "summary": string (2-4 short sentences in plain, friendly language, second person),
+ "terms": [{"label": string, "value": string}] (4-8 most important: price, fees, minimum term, notice period, renewal, payment),
+ "plain": [string] (3-6 sentences explaining complicated terms simply: what they mean for the user in practice),
+ "risks": [{"term": string, "severity": "high"|"medium"|"low", "explanation": string}] (unusual or costly conditions: auto-renewal, long notice, price increase rights, hidden fees, cancellation fees, penalties, data sharing, liability)
+}`;
+async function aiCall(input,opts={}){if(!SAMPLE)throw new Error('AI is available when you open this app in Claude.');
+  try{return await SAMPLE(input,Object.assign({cache:false},opts));}catch(e){const c=e&&e.code;throw new Error(c==='not_granted'?'AI access wasn\u2019t allowed.':c==='rate_limited'?'AI is busy. Try again in a minute.':(e&&e.message)||'AI request failed.');}}
+function parseJSON(t){const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a<0||b<0)throw new Error('AI returned no data. Try again.');return JSON.parse(t.slice(a,b+1));}
+async function analyzeDoc(docId,images){const d=DOCS.find(x=>x.id===docId);if(!d)return;UI.busy['an-'+docId]=true;render();
+  try{const it=findItem(d.itemId);
+    const prompt=`You read consumer contracts, subscription terms, price-change letters and bills for a personal finance app called Subwise. Today is ${today()}. The user lives in ${SET.country==='DE'?'Germany':'Europe'}; documents may be in German or English. Always answer in English.\n${it?`This document belongs to the user's existing subscription "${it.name}" (${it.provider}), currently ${it.price} ${it.currency} ${it.cycle}.\n`:''}Return ONLY a JSON object, no prose, with this shape:\n${AI_SCHEMA}\nUse null when the document doesn't say. Convert notice like "3 Monate" to noticeValue 3, noticeUnit "months". If it is a price-change letter, fill priceChange.\n\nFILE NAME: ${d.name}\nDOCUMENT TEXT:\n"""\n${(d.text||'(scanned document: see images)').slice(0,90000)}\n"""`;
+    const opts={modelTier:'default'};if(images&&images.length&&AI_IMAGES)opts.images=images;
+    const r=await aiCall(prompt,opts);const j=parseJSON(r.text);
+    const nd=clone(DOCS.find(x=>x.id===docId)||d);nd.ai={summary:j.summary||'',terms:j.terms||[],plain:j.plain||[],risks:j.risks||[],docType:j.docType,extracted:j.item||{},priceChange:j.priceChange||null,at:new Date().toISOString()};
+    if(!nd.text&&j.summary)nd.text='(Scanned document read by AI.)';
+    UI.busy['an-'+docId]=false;await save(nd);render();offerFromDoc(nd);
+  }catch(e){UI.busy['an-'+docId]=false;render();toast(e.message,'error');}}
+function offerFromDoc(d){const x=(d.ai&&d.ai.extracted)||{};const pc=d.ai&&d.ai.priceChange;const linked=findItem(d.itemId);
+  const match=linked||ITEMS.find(i=>x.provider&&i.provider&&i.provider.toLowerCase().split(' ')[0]===String(x.provider).toLowerCase().split(' ')[0]&&(!x.category||i.category===x.category));
+  const rows=[['Name',x.name],['Provider',x.provider],['Price',x.price!=null?money(x.price,x.currency||SET.baseCurrency)+' '+cycleWord(x.cycle):null],['Next payment',x.nextPayment&&fmtDate(x.nextPayment)],['Minimum term ends',x.minTermEnd&&fmtDate(x.minTermEnd)],['Notice period',x.noticeValue?x.noticeValue+' '+x.noticeUnit:null],['Trial ends',x.trialEnds&&fmtDate(x.trialEnds)]].filter(r=>r[1]);
+  const m=openModal('Here\u2019s what AI found',`${pc&&pc.newPrice!=null?`<div class="note-box warn"><b>Price change detected:</b> ${money(pc.oldPrice,x.currency||SET.baseCurrency)} → ${money(pc.newPrice,x.currency||SET.baseCurrency)}${pc.effectiveDate?' from '+fmtDate(pc.effectiveDate):''}.</div>`:''}
+    <dl class="facts">${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')||'<dt>Details</dt><dd>No subscription details found.</dd>'}</dl>
+    ${match?`<p>This looks like <b>${esc(match.name)}</b>, which you already track.</p>`:''}`,
+    `<button class="btn" data-act="closemodal">Just keep the document</button>${match&&pc&&pc.newPrice!=null?`<button class="btn" id="o_price">Update price of ${esc(match.name)}</button>`:''}${match?`<button class="btn" id="o_update">Update ${esc(match.name)}</button>`:''}<button class="btn primary" id="o_new">Add as new subscription</button>`);
+  const prefill={};Object.entries(x).forEach(([k,v])=>{if(v!==null&&v!==''&&v!==undefined)prefill[k]=v;});if(prefill.category&&!CATEGORIES.includes(prefill.category))prefill.category='Other';if(prefill.cycle&&!CYCLES[prefill.cycle])delete prefill.cycle;
+  if(pc&&pc.newPrice!=null)prefill.price=pc.newPrice;
+  const link=async it=>{const nd=clone(DOCS.find(z=>z.id===d.id));nd.itemId=it.id;await save(nd);const ni=clone(findItem(it.id)||it);ni.docIds=[...new Set([...(ni.docIds||[]),d.id])];await save(ni);};
+  $('#o_new',m).onclick=()=>{closeModal();openItemForm(null,Object.assign({status:prefill.trialEnds?'trial':'active'},prefill),link);};
+  const u=$('#o_update',m);u&&(u.onclick=()=>{closeModal();const p=Object.assign({},prefill);delete p.name;openItemForm(match,p,link);});
+  const pb=$('#o_price',m);pb&&(pb.onclick=async()=>{const o=clone(match);o.priceHistory=o.priceHistory||[];if(!o.priceHistory.length)o.priceHistory.push({date:o.startDate||today(),price:+o.price});o.priceHistory.push({date:pc.effectiveDate||today(),price:+pc.newPrice});o.price=+pc.newPrice;await save(o);await link(o);closeModal();toast('Price updated. You\u2019ll see it under Prices & savings.');});}
+async function askDoc(docId,q){const d=DOCS.find(x=>x.id===docId);if(!d)return;const chat=UI.chats[docId]=UI.chats[docId]||[];chat.push({role:'user',content:q});const ans={role:'assistant',content:'Thinking\u2026'};chat.push(ans);UI.busy['ask-'+docId]=true;render();
+  const it=findItem(d.itemId);
+  const ctx=`You help a consumer understand their own contract in simple, friendly language. Today is ${today()}. The user lives in ${SET.country==='DE'?'Germany':'Europe'}. Answer from the document below; quote the relevant clause briefly when useful. If the document doesn't say, say so and suggest what to check. You can mention general consumer rules (for Germany: since 1 March 2022 most consumer contracts that auto-extend after the minimum term can then be cancelled with at most one month's notice) but say clearly when you're going beyond the document. Keep answers under 150 words. No legal advice disclaimers beyond one short line when it matters.\n${it?`Tracked details: ${it.name}, ${it.price} ${it.currency} ${it.cycle}, notice ${noticeText(it)}, minimum term ends ${it.minTermEnd||'n/a'}.\n`:''}DOCUMENT "${d.name}":\n"""\n${(d.text||'').slice(0,80000)}\n"""${d.ai?`\nEarlier AI summary: ${d.ai.summary}`:''}`;
+  const msgs=[{role:'user',content:ctx+'\n\nQuestion: '+chat[0].content}];for(let k=1;k<chat.length-1;k++)msgs.push({role:chat[k].role,content:chat[k].content});
+  try{const r=await aiCall(msgs,{modelTier:'default',onText:({text})=>{ans.content=text||'Thinking\u2026';const el=$$('#chatlog .msg.assistant').pop();if(el)el.innerHTML=fmtAI(ans.content);}});ans.content=r.text;}
+  catch(e){ans.content='Sorry, '+e.message;}
+  UI.busy['ask-'+docId]=false;render();}
+function linkDocForm(docId){const d=DOCS.find(x=>x.id===docId);const m=openModal('Link '+d.name,`<div class="field"><label for="ld_s">Subscription</label><select id="ld_s">${ITEMS.map(i=>`<option value="${i.id}">${esc(i.name)}</option>`).join('')}</select></div>`,
+  `<button class="btn" data-act="closemodal">Cancel</button>${d.ai?'<button class="btn" id="ld_new">Create new from document</button>':''}<button class="btn primary" id="ld_ok">Link</button>`);
+  $('#ld_ok',m).onclick=async()=>{const it=findItem($('#ld_s',m).value);const nd=clone(d);nd.itemId=it.id;await save(nd);const ni=clone(it);ni.docIds=[...new Set([...(ni.docIds||[]),d.id])];await save(ni);closeModal();toast('Linked to '+it.name);};
+  const n=$('#ld_new',m);n&&(n.onclick=()=>{closeModal();offerFromDoc(d);});}
+
+// ---------- CANCELLATION ASSISTANT ----------
+VIEWS.cancel=()=>{
+  const live=ITEMS.filter(i=>i.status!=='cancelled');
+  const col=(st)=>live.filter(i=>((i.cancellation||{}).status||'none')===st);
+  const sv=buildSavings(ITEMS,SET);const suggested=new Set(sv.list.filter(o=>['unused','overlap','trial','duplicate'].includes(o.type)).map(o=>o.item.id));
+  const todo=col('none').sort((a,b)=>(suggested.has(b.id)-suggested.has(a.id))||((cancelBy(a)||'9')<(cancelBy(b)||'9')?-1:1));
+  const ended=ITEMS.filter(i=>i.status==='cancelled');
+  const card=i=>{const c=i.cancellation||{};const cb=cancelBy(i);return `<li class="kc" data-act="startcancel" data-id="${i.id}">${avatar(i)}<div><b>${esc(i.name)}</b><small>${money(i.price,i.currency)} ${cycleWord(i.cycle)}</small>
+    ${c.status==='sent'?`<small>Sent ${fmtDate(c.sentAt)} · ${esc(c.method)}</small>`:c.status==='confirmed'?`<small>Ends ${fmtDate(c.endsAt)}${c.confirmationNo?' · #'+esc(c.confirmationNo):''}</small>`:c.status==='draft'?'<small>Letter drafted</small>':cb&&daysUntil(cb)>=0?`<small>Cancel by ${fmtShort(cb)}</small>`:`<small>Ends ${fmtShort(earliestEnd(i))} if cancelled now</small>`}</div>${suggested.has(i.id)&&c.status!=='sent'&&c.status!=='confirmed'?'<span class="pill save-p">Save</span>':''}</li>`;};
+  return `<div class="kanban">
+   <section><h2>Could cancel <b>${todo.length}</b></h2><ul>${todo.map(card).join('')}</ul></section>
+   <section><h2>Letter drafted <b>${col('draft').length}</b></h2><ul>${col('draft').map(card).join('')||'<li class="muted">Pick a subscription to write a letter.</li>'}</ul></section>
+   <section><h2>Sent, awaiting confirmation <b>${col('sent').length}</b></h2><ul>${col('sent').map(card).join('')||'<li class="muted">Nothing waiting.</li>'}</ul></section>
+   <section><h2>Confirmed <b>${col('confirmed').length+ended.length}</b></h2><ul>${col('confirmed').map(card).join('')}${ended.map(i=>`<li class="kc done" data-act="open" data-id="${i.id}">${avatar(i)}<div><b>${esc(i.name)}</b><small>Cancelled</small></div></li>`).join('')||(col('confirmed').length?'':'<li class="muted">Confirmed cancellations appear here.</li>')}</ul></section>
+  </div>
+  <p class="note">${SET.country==='DE'?'Tip for Germany: for most consumer contracts signed since 1 March 2022, once the minimum term is over you can cancel with at most one month\u2019s notice. Many websites must also offer a “Verträge hier kündigen” cancellation button. Rent and insurance follow their own rules.':'Ask for written confirmation of every cancellation and keep it.'}</p>`;};
+function openCancel(id){const i=findItem(id);if(!i)return;if(route()!=='cancel')go('cancel');closeDrawer();
+  const c=i.cancellation||{status:'none'};const L=LETTERS.find(l=>l.id===c.letterId)||LETTERS.filter(l=>l.itemId===i.id).pop();const P=SET.profile;
+  const end=earliestEnd(i);const cb=cancelBy(i);
+  const m=openModal('Cancel '+i.name,`
+   <div class="cx-top">${avatar(i)}<div><b>${esc(i.name)}</b><small>${money(i.price,i.currency)} ${cycleWord(i.cycle)} · notice ${noticeText(i)}</small></div>
+   <div class="cx-end">${cb&&daysUntil(cb)>=0?`<span>Cancel by <b>${fmtDate(cb)}</b></span>`:''}<span>Ends <b>${fmtDate(end)}</b> if sent today</span></div></div>
+   <ol class="steps"><li class="${c.status==='none'?'on':'done'}">Write</li><li class="${c.status==='draft'?'on':['sent','confirmed'].includes(c.status)?'done':''}">Send</li><li class="${c.status==='sent'?'on':c.status==='confirmed'?'done':''}">Get confirmation</li></ol>
+   <div class="cx-grid">
+    <div class="form-grid">
+     <div class="field"><label for="cx_lang">Language</label><select id="cx_lang"><option value="en" ${(L&&L.language)!=='de'?'selected':''}>English</option><option value="de" ${(L&&L.language)==='de'||(!L&&SET.country==='DE'&&i.type==='contract')?'selected':''}>Deutsch</option></select></div>
+     <div class="field"><label for="cx_ch">Send as</label><select id="cx_ch"><option value="email">Email</option><option value="letter" ${(L&&L.channel)==='letter'?'selected':''}>Letter (PDF to print)</option></select></div>
+     <div class="field"><label for="cx_date">End date</label><select id="cx_date"><option value="earliest">Earliest possible (${fmtShort(end)})</option><option value="special">Special right to cancel (price increase)</option></select></div>
+     <div class="field"><label for="cx_reason">Reason (optional)</label><input id="cx_reason" placeholder="e.g. moving, price increase"></div>
+     <div class="field"><label for="cx_name">Your name</label><input id="cx_name" value="${esc(P.name)}"></div>
+     <div class="field"><label for="cx_no">Customer number</label><input id="cx_no" value="${esc(i.customerNo||'')}"></div>
+     <div class="field full"><label for="cx_addr">Your address</label><textarea id="cx_addr" rows="2">${esc(P.address)}</textarea></div>
+     <div class="field full"><label for="cx_to">Send to</label><textarea id="cx_to" rows="2" placeholder="Cancellation email or postal address">${esc([i.cancelEmail,i.cancelAddress].filter(Boolean).join('\n'))}</textarea></div>
+     <label class="check full"><input type="checkbox" id="cx_sepa" ${/sepa|lastschrift|direct debit/i.test(i.paymentMethod||'')?'checked':''}> Revoke direct debit mandate when it ends</label>
+     <label class="check full"><input type="checkbox" id="cx_mkt" checked> Object to marketing calls about winning me back</label>
+     <div class="row full"><button class="btn" id="cx_tpl">Use template</button>${SAMPLE?'<button class="btn primary" id="cx_ai">Write with AI</button>':''}</div>
+    </div>
+    <div class="letter">
+     <div class="field"><label for="cx_subj">Subject</label><input id="cx_subj" value="${esc(L?L.subject:'')}"></div>
+     <div class="field"><label for="cx_body">Letter</label><textarea id="cx_body" rows="14">${esc(L?L.body:'')}</textarea></div>
+     <div class="row"><button class="btn small" id="cx_copy">Copy</button><a class="btn small" id="cx_mail" href="#" target="_blank" rel="noopener">Open in email app</a>${canDL()?'<button class="btn small" id="cx_pdf">Download PDF</button>':''}<button class="btn small" id="cx_savedraft">Save draft</button></div>
+     <small class="note" id="cx_mailnote"></small>
+    </div>
+   </div>
+   <div class="cx-track">
+    <h3>Track it</h3>
+    ${c.status==='sent'||c.status==='confirmed'?`<p>Sent on <b>${fmtDate(c.sentAt)}</b> by ${esc(c.method)}.${c.status==='confirmed'?` Confirmed on <b>${fmtDate(c.confirmedAt)}</b>${c.confirmationNo?' (#'+esc(c.confirmationNo)+')':''}. Ends <b>${fmtDate(c.endsAt)}</b>.`:' Waiting for confirmation.'}</p>`:''}
+    <div class="track-row">
+     ${c.status!=='sent'&&c.status!=='confirmed'?`<div class="field"><label for="tr_sent">Sent on</label><input type="date" id="tr_sent" value="${today()}"></div><div class="field"><label for="tr_m">How</label><select id="tr_m">${['Email','Registered letter','Letter','Online form / cancel button','Phone'].map(x=>`<option>${x}</option>`).join('')}</select></div><button class="btn primary" id="tr_send">Mark as sent</button>`:''}
+     ${c.status==='sent'?`<div class="field"><label for="tr_cd">Confirmed on</label><input type="date" id="tr_cd" value="${today()}"></div><div class="field"><label for="tr_no">Confirmation no.</label><input id="tr_no"></div><div class="field"><label for="tr_end">Ends on</label><input type="date" id="tr_end" value="${c.endsAt||end}"></div><button class="btn primary" id="tr_conf">Confirmation received</button>`:''}
+     ${c.status==='confirmed'?`<button class="btn" id="tr_done">Mark as cancelled now</button><button class="btn ghost" id="tr_reset">Undo cancellation</button>`:''}
+     ${c.status==='sent'?`<button class="btn ghost" id="tr_reset">Undo</button>`:''}
+    </div></div>`,`<button class="btn" data-act="closemodal">Close</button>`,{wide:true});
+  const g=k=>$('#'+k,m);
+  const opts=()=>({lang:g('cx_lang').value,channel:g('cx_ch').value,date:g('cx_date').value,reason:g('cx_reason').value.trim(),name:g('cx_name').value.trim(),no:g('cx_no').value.trim(),addr:g('cx_addr').value.trim(),to:g('cx_to').value.trim(),sepa:g('cx_sepa').checked,mkt:g('cx_mkt').checked});
+  const refreshMail=()=>{const to=(g('cx_to').value.match(/[^\s@]+@[^\s@]+\.[^\s@]+/)||[''])[0];g('cx_mail').href='mailto:'+encodeURIComponent(to)+'?subject='+encodeURIComponent(g('cx_subj').value)+'&body='+encodeURIComponent(g('cx_body').value);
+    g('cx_mailnote').textContent=to?'Email goes to '+to+'. If your email app doesn\u2019t open, copy the text instead.':'Add a cancellation email address above to send by email.';};
+  ['cx_to','cx_subj','cx_body'].forEach(k=>g(k).addEventListener('input',refreshMail));refreshMail();
+  const fill=l=>{g('cx_subj').value=l.subject;g('cx_body').value=l.body;refreshMail();};
+  g('cx_tpl').onclick=()=>fill(letterTemplate(i,opts()));
+  const ai=g('cx_ai');ai&&(ai.onclick=async()=>{ai.disabled=true;ai.textContent='Writing\u2026';try{fill(await letterAI(i,opts(),t=>{g('cx_body').value=t;}));}catch(e){toast(e.message,'error');}ai.disabled=false;ai.textContent='Write with AI';});
+  if(!L)fill(letterTemplate(i,opts()));
+  g('cx_copy').onclick=async()=>{try{await navigator.clipboard.writeText(g('cx_subj').value+'\n\n'+g('cx_body').value);toast('Copied');}catch(e){g('cx_body').select();toast('Press Ctrl+C / Cmd+C to copy.','info');}};
+  const pdf=g('cx_pdf');pdf&&(pdf.onclick=()=>letterPDF(i,opts(),g('cx_subj').value,g('cx_body').value));
+  const persistLetter=async(status)=>{const o=opts();const letter=Object.assign(L?clone(L):{id:uid('l'),kind:'letter',itemId:i.id,createdAt:today()},{language:o.lang,channel:o.channel,subject:g('cx_subj').value,body:g('cx_body').value});await save(letter);
+    if(o.name!==P.name||o.addr!==P.address){SET.profile=Object.assign({},SET.profile,{name:o.name,address:o.addr});await saveSettings();}
+    const it=clone(findItem(i.id));it.customerNo=o.no||it.customerNo;it.cancellation=Object.assign({},it.cancellation||{},{letterId:letter.id});if(status)it.cancellation.status=status;return {it,letter};};
+  g('cx_savedraft').onclick=async()=>{const {it}=await persistLetter((i.cancellation||{}).status==='none'||!(i.cancellation||{}).status?'draft':null);await save(it);toast('Draft saved');closeModal();};
+  const s=g('tr_send');s&&(s.onclick=async()=>{const {it}=await persistLetter('sent');it.cancellation.sentAt=g('tr_sent').value||today();it.cancellation.method=g('tr_m').value;it.cancellation.endsAt=end;it.status='cancelling';await save(it);closeModal();toast('Marked as sent. We\u2019ll remind you if no confirmation arrives within 7 days.');});
+  const cf=g('tr_conf');cf&&(cf.onclick=async()=>{const it=clone(findItem(i.id));Object.assign(it.cancellation,{status:'confirmed',confirmedAt:g('tr_cd').value||today(),confirmationNo:g('tr_no').value.trim(),endsAt:g('tr_end').value||end});it.status='cancelling';await save(it);closeModal();toast('Cancellation confirmed. Payments stop after '+fmtDate(it.cancellation.endsAt)+'.');});
+  const dn=g('tr_done');dn&&(dn.onclick=async()=>{const it=clone(findItem(i.id));it.status='cancelled';await save(it);closeModal();toast(i.name+' is cancelled');});
+  const rs=g('tr_reset');rs&&(rs.onclick=async()=>{const it=clone(findItem(i.id));it.cancellation={status:'none'};it.status='active';await save(it);closeModal();toast('Cancellation undone');});
+}
+function letterTemplate(i,o){const end=earliestEnd(i);const de=o.lang==='de';const special=o.date==='special';const no=o.no?(de?`Kundennummer: ${o.no}`:`Customer number: ${o.no}`):'';
+  if(de){const subject=`Kündigung ${i.name}${o.no?' – Kundennummer '+o.no:''}`;
+    const body=`Sehr geehrte Damen und Herren,\n\nhiermit kündige ich meinen Vertrag „${i.name}“${no?' ('+no+')':''} ${special?'außerordentlich aufgrund der angekündigten Preiserhöhung zum frühestmöglichen Zeitpunkt':`fristgerecht zum nächstmöglichen Zeitpunkt, nach meiner Berechnung zum ${parseD(end).toLocaleDateString('de-DE')}`}.${o.reason?`\n\nGrund: ${o.reason}.`:''}\n\nBitte bestätigen Sie mir den Eingang dieser Kündigung sowie das genaue Vertragsende schriftlich.${o.sepa?'\n\nDas erteilte SEPA-Lastschriftmandat widerrufe ich mit Wirkung zum Vertragsende.':''}${o.mkt?'\n\nEiner Kontaktaufnahme zu Werbe- oder Rückgewinnungszwecken widerspreche ich.':''}\n\nMit freundlichen Grüßen\n${o.name||'[Ihr Name]'}${o.addr?'\n'+o.addr:''}`;
+    return {subject,body};}
+  const subject=`Cancellation of ${i.name}${o.no?' – customer no. '+o.no:''}`;
+  const body=`Dear ${i.provider||'Sir or Madam'} team,\n\nI hereby cancel my ${i.name} ${i.type==='contract'?'contract':'subscription'}${no?' ('+no+')':''} ${special?'with immediate effect, using my special right to cancel following your announced price increase':`at the earliest possible date, which by my calculation is ${fmtDate(end)}`}.${o.reason?`\n\nReason: ${o.reason}.`:''}\n\nPlease confirm in writing that you have received this cancellation and the date on which it takes effect.${o.sepa?'\n\nI revoke the direct debit mandate with effect from the end of the contract.':''}${o.mkt?'\n\nPlease do not contact me for marketing or retention purposes.':''}\n\nKind regards\n${o.name||'[Your name]'}${o.addr?'\n'+o.addr:''}`;
+  return {subject,body};}
+async function letterAI(i,o,onText){const end=earliestEnd(i);const doc=DOCS.find(d=>d.itemId===i.id&&d.ai);
+  const p=`Write a short, firm, polite cancellation ${o.channel==='email'?'email':'letter'} in ${o.lang==='de'?'German (formal "Sie", standard Kündigung style)':'English'} for a consumer.\nToday: ${today()}. Service: ${i.name} from ${i.provider}. Type: ${i.type}. Customer number: ${o.no||'unknown'}. Notice period: ${noticeText(i)}. Minimum term ends: ${i.minTermEnd||'n/a'}. Earliest end date by our calculation: ${end}.\nEnd date wanted: ${o.date==='special'?'immediately / earliest possible using the special right to cancel because of a price increase':'earliest possible date'}. Reason: ${o.reason||'none given (do not invent one)'}.\n${o.sepa?'Include revoking the SEPA direct debit mandate at the end.':''} ${o.mkt?'Include objecting to marketing/retention contact.':''} Always ask for written confirmation with the exact end date. Sign with: ${o.name||'[name]'}${o.addr?', '+o.addr.replace(/\n/g,', '):''}.\n${doc?'Relevant contract summary: '+doc.ai.summary:''}\nReturn ONLY JSON: {"subject": string, "body": string} with \\n line breaks. No placeholders except a name if missing.`;
+  const r=await aiCall(p,{modelTier:'quick'});const j=parseJSON(r.text);return {subject:j.subject||'',body:j.body||''};}
+function letterPDF(i,o,subject,body){if(!window.jspdf){toast('The PDF tool didn\u2019t load. Use Copy instead.','error');return;}
+  const doc=new jspdf.jsPDF({unit:'mm',format:'a4'});doc.setFont('helvetica','normal');doc.setFontSize(10);
+  let y=20;const sender=[o.name,...(o.addr||'').split('\n')].filter(Boolean).join(' · ');if(sender){doc.setTextColor(110);doc.text(sender,20,y);doc.setTextColor(0);}
+  y=45;const rcpt=(o.to||'').split('\n').filter(l=>!/@/.test(l)).join('\n')||i.provider;doc.setFontSize(11);doc.text(doc.splitTextToSize(rcpt.replace(/, /g,'\n'),90),20,y);
+  y=85;const place=(o.addr.match(/\d{5}\s+([^\n,]+)/)||[])[1];doc.text((place?place.trim()+', ':'')+parseD(today()).toLocaleDateString(o.lang==='de'?'de-DE':'en-GB'),190,y,{align:'right'});
+  y=100;doc.setFont('helvetica','bold');doc.text(doc.splitTextToSize(subject,170),20,y);doc.setFont('helvetica','normal');y+=12;
+  const lines=doc.splitTextToSize(body,170);lines.forEach(l=>{if(y>275){doc.addPage();y=20;}doc.text(l,20,y);y+=5.6;});
+  const out=doc.output('arraybuffer');saveFile(('Cancellation '+i.name).replace(/[^\w\- ]+/g,'').replace(/\s+/g,'-')+'.pdf',out);}
+async function saveFile(name,data){if(!DL&&STANDALONE){const b=new Blob([data]);const u=URL.createObjectURL(b);const l=document.createElement('a');l.href=u;l.download=name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);return;}
+  if(!DL){toast('Downloads aren\u2019t available here.','error');return;}try{await DL.save({filename:name,data});}catch(e){if(e&&e.code!=='declined')toast('Couldn\u2019t save the file.','error');}}
+
+// ---------- INSIGHTS ----------
+VIEWS.insights=()=>{
+  const sv=buildSavings(ITEMS,SET);
+  const changes=ITEMS.map(i=>({i,p:priceChange(i)})).filter(x=>x.p).sort((a,b)=>a.p.date<b.p.date?1:-1);
+  const incYear=changes.filter(x=>x.p.to>x.p.from&&x.p.daysAgo<=365).reduce((s,x)=>s+toBase(x.p.to-x.p.from,x.i.currency,SET)*(CYCLES[x.i.cycle]||CYCLES.monthly).perYear,0);
+  const top=ITEMS.filter(counts).sort((a,b)=>monthlyEq(b,SET)-monthlyEq(a,SET)).slice(0,6);const t=totals(ITEMS,SET);
+  return `<section class="kpis three">
+    <div class="kpi save click" data-act="grid" data-scope="savings" title="Change the numbers behind this"><label>Potential savings</label><strong>${moneyShort(sv.total)}<span>/yr</span></strong><small>${sv.list.length} ideas, best one per subscription</small></div>
+    <div class="kpi"><label>Price increases, last 12 months</label><strong>+${moneyShort(incYear)}<span>/yr</span></strong><small>${changes.filter(x=>x.p.to>x.p.from&&x.p.daysAgo<=365).length} subscriptions got more expensive</small></div>
+    <div class="kpi"><label>Overlapping services</label><strong>${sv.dupGroups.reduce((s,g)=>s+g.items.length,0)}</strong><small>in ${sv.dupGroups.length} categor${sv.dupGroups.length===1?'y':'ies'}</small></div></section>
+  <section class="card"><div class="card-h"><h2>Savings recommendations</h2></div><ul class="ideas">${sv.list.map(ideaRow).join('')||'<li class="muted pad">No ideas right now. Mark how often you use each subscription to get better suggestions.</li>'}</ul>
+   <p class="note pad-x">Estimates for yearly billing and tariff comparison are typical market discounts, not quotes.</p></section>
+  <section class="grid2">
+   <div class="card"><div class="card-h"><h2>Price changes</h2></div>
+    ${changes.length?`<div class="table-wrap"><table class="list tight"><thead><tr><th>Subscription</th><th>Changed</th><th class="num">Before</th><th class="num">Now</th><th class="num">Per year</th></tr></thead><tbody>${changes.map(({i,p})=>{const y=toBase(p.to-p.from,i.currency,SET)*(CYCLES[i.cycle]||CYCLES.monthly).perYear;return `<tr data-act="open" data-id="${i.id}"><td><div class="who">${avatar(i)}<b>${esc(i.name)}</b></div></td><td>${fmtDate(p.date)}</td><td class="num">${money(p.from,i.currency)}</td><td class="num">${money(p.to,i.currency)} <span class="${p.to>p.from?'up':'down'}">${p.to>p.from?'▲':'▼'}${Math.abs(p.pct).toFixed(1)}%</span></td><td class="num ${y>0?'up':'down'}">${y>0?'+':''}${money(y)}</td></tr>`;}).join('')}</tbody></table></div>`:'<p class="muted pad">No price changes recorded yet. Subwise records one whenever you change a price, or when AI reads a price-change letter.</p>'}</div>
+   <div class="card"><div class="card-h"><h2>Overlapping services</h2></div>
+    ${sv.dupGroups.length?sv.dupGroups.map(g=>`<div class="ovl"><h3>${esc(g.category)} <span>${money(g.items.reduce((s,i)=>s+monthlyEq(i,SET),0))}/mo together</span></h3><ul>${g.items.map(i=>`<li data-act="open" data-id="${i.id}">${avatar(i)}<b>${esc(i.name)}</b><span class="muted small">${i.usage}</span><span class="grow"></span>${money(monthlyEq(i,SET))}/mo ${i===g.keep?'<span class="pill ok">Keep</span>':''}</li>`).join('')}</ul></div>`).join(''):'<p class="muted pad">No overlapping services found.</p>'}
+    <div class="card-h"><h2>Most expensive</h2></div>
+    <ul class="bars">${top.map(i=>`<li data-act="open" data-id="${i.id}"><span class="bl">${esc(i.name)}</span><span class="bt"><i style="width:${(monthlyEq(i,SET)/monthlyEq(top[0],SET)*100).toFixed(1)}%;--h:${CAT_HUE[i.category]??0}"></i></span><span class="bv">${money(monthlyEq(i,SET))}</span><span class="bp">${(monthlyEq(i,SET)/t.monthly*100).toFixed(0)}%</span></li>`).join('')}</ul></div>
+  </section>`;};
+
+// ---------- SETTINGS ----------
+VIEWS.preferences=()=>{const P=SET.profile;return `<div class="grid2">
+  <section class="card"><div class="card-h"><h2>Your details for letters</h2></div><div class="form-grid one">
+   <div class="field"><label for="s_name">Full name</label><input id="s_name" value="${esc(P.name)}"></div>
+   <div class="field"><label for="s_addr">Address</label><textarea id="s_addr" rows="3">${esc(P.address)}</textarea></div>
+   <div class="field"><label for="s_country">Country rules</label><select id="s_country"><option value="DE" ${SET.country==='DE'?'selected':''}>Germany</option><option value="OTHER" ${SET.country!=='DE'?'selected':''}>Other</option></select><small>Used for cancellation tips and AI explanations.</small></div>
+   <button class="btn primary" data-act="saveprofile">Save details</button></div></section>
+  <section class="card"><div class="card-h"><h2>Currencies</h2></div><div class="form-grid one">
+   <div class="field"><label for="s_base">Show totals in</label><select id="s_base">${Object.keys(SET.fx).map(c=>`<option ${SET.baseCurrency===c?'selected':''}>${c}</option>`).join('')}</select></div>
+   <div class="fx">${Object.entries(SET.fx).map(([c,v])=>`<div class="field"><label for="fx_${c}">1 ${c} =</label><div class="pair"><input id="fx_${c}" type="number" step="0.0001" value="${v}" ${c==='EUR'?'disabled':''}><span>EUR</span></div></div>`).join('')}</div>
+   <small class="note">Exchange rates are set by you and don\u2019t update automatically.</small>
+   <button class="btn primary" data-act="savefx">Save currencies</button></div></section>
+  <section class="card"><div class="card-h"><h2>Your data</h2></div><div class="pad stack">
+   <p>${MODE==='cloud'?'Your data is saved privately to your Claude account. Only you can see it.':MODE==='local'?(STANDALONE?'Your data is saved in this browser on this device. Download a backup now and then to keep it safe.':'Your data is saved in this browser only. Open Subwise in Claude to save it to your account.'):'You\u2019re viewing example data.'}</p>
+   <div class="row">${canDL()?'<button class="btn" data-act="exportjson">Download backup (.json)</button><button class="btn" data-act="exportcsv">Download list (.csv)</button>':'<button class="btn" data-act="copycsv">Copy list as CSV</button>'}<label class="btn" for="importf">Restore backup</label><input type="file" id="importf" accept=".json" hidden></div>
+   <div class="row"><button class="btn danger ghost" data-act="wipe">Delete all my data</button></div></div></section>
+  <section class="card"><div class="card-h"><h2>About AI features</h2></div><div class="pad stack">
+   <p>${SAMPLE?'AI is on. Documents you upload are sent to Claude to be read, summarised and answered about.':STANDALONE?'This copy runs without Claude, so AI reading, summaries, questions and AI-written letters are off. Uploads still extract the text, and cancellation letters use the built-in templates.':'AI features work when Subwise is opened in Claude.'}</p>
+   <p class="muted">AI can make mistakes. Check dates and amounts against the original. Subwise doesn\u2019t give legal advice.</p></div></section></div>`;};
+AFTER.preferences=()=>{const f=$('#importf');f&&(f.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const j=JSON.parse(await file.text());await importAll(j);}catch(err){toast('That file isn\u2019t a Subwise backup.','error');}});};
+async function importAll(j){if(!Array.isArray(j.items))throw new Error('bad');const all=[...j.items.map(x=>Object.assign(x,{kind:'item'})),...(j.docs||[]).map(x=>Object.assign(x,{kind:'document'})),...(j.letters||[]).map(x=>Object.assign(x,{kind:'letter'}))];
+  if(isDemo()){MODE=MODE==='demo-cloud'?'cloud':'local';ITEMS=[];DOCS=[];LETTERS=[];}
+  if(j.settings)await save(Object.assign(defaultSettings(),j.settings,{id:'settings',kind:'settings'}));for(const o of all)await save(o);toast('Restored '+j.items.length+' subscriptions');}
+function csvText(){const head=['Name','Provider','Category','Type','Status','Price','Currency','Billing','Per month ('+SET.baseCurrency+')','Next payment','Minimum term ends','Notice','Last day to cancel','Payment method','Customer no.'];
+  const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+  return [head.map(q).join(','),...ITEMS.map(i=>[i.name,i.provider,i.category,i.type,STATUS[i.status],i.price,i.currency,CYCLES[i.cycle]?.label,monthlyEq(i,SET).toFixed(2),nextPay(i)||'',i.minTermEnd||'',noticeText(i),cancelBy(i)||'',i.paymentMethod,i.customerNo].map(q).join(','))].join('\n');}
+
+// ---------- modal / drawer / toast ----------
+function openModal(title,body,foot,o={}){closeModal();const w=document.createElement('div');w.className='modal-wrap';w.innerHTML=`<div class="modal ${o.wide?'wide':''}" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="m-h"><h2 id="mt">${esc(title)}</h2><button class="iconbtn" data-act="closemodal" aria-label="Close">${icon('M6 6l12 12M18 6L6 18')}</button></div><div class="m-b">${body}</div>${foot?`<div class="m-f">${foot}</div>`:''}</div>`;
+  w.addEventListener('mousedown',e=>{if(e.target===w)closeModal();});$('#modals').appendChild(w);setTimeout(()=>{const f=$('input,select,textarea,button.primary',w.querySelector('.m-b'))||$('.iconbtn',w);f&&f.focus();},20);return w;}
+function closeModal(){$('#modals').innerHTML='';}
+function openDrawer(html){let d=$('#drawer');d.innerHTML=`<div class="dr">${html}</div>`;d.classList.add('open');d.setAttribute('aria-hidden','false');setTimeout(()=>{const b=$('.dr .iconbtn',d);b&&b.focus();},30);}
+function closeDrawer(){const d=$('#drawer');if(d){d.classList.remove('open');d.setAttribute('aria-hidden','true');}}
+let tn=0;function toast(msg,kind='ok',ms=3800){const id='t'+(++tn);const el=document.createElement('div');el.className='toast '+kind;el.id=id;el.textContent=msg;$('#toasts').appendChild(el);if(ms)setTimeout(()=>el.remove(),ms);return id;}
+function dismissToast(id){const el=document.getElementById(id);el&&el.remove();}
+function confirmBox(title,text,okLabel,fn){const m=openModal(title,`<p>${esc(text)}</p>`,`<button class="btn" data-act="closemodal">Cancel</button><button class="btn danger" id="cf_ok">${esc(okLabel)}</button>`);$('#cf_ok',m).onclick=async()=>{closeModal();await fn();};}
+
+// ---------- actions ----------
+const ACT={
+  reload:()=>location.reload(),
+  menu:()=>$('#side').classList.toggle('show'),
+  add:()=>openItemForm(),
+  read:(d)=>{UI.pendingItem=d.item||null;closeDrawer();go('reader');setTimeout(()=>{const f=$('#docfile');f&&f.click();},60);},
+  keep:keepExamples,fresh:startFresh,
+  open:d=>{if($('#modals').children.length)closeModal();openItem(d.id);},closedrawer:closeDrawer,closemodal:closeModal,
+  edit:d=>{closeDrawer();openItemForm(findItem(d.id));},
+  quick:d=>quickEdit(d.id,d.f),
+  repair:async()=>{let n=0;const okDate=s=>!!(s&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&parseD(s)&&!isNaN(parseD(s)));
+    for(const i of ITEMS.slice()){const o=clone(i);const before=JSON.stringify(o);
+      o.name=String(o.name||'').trim()||'Untitled subscription';o.provider=String(o.provider||'').trim();
+      if(!CATEGORIES.includes(o.category))o.category='Other';if(!CYCLES[o.cycle])o.cycle='monthly';if(!STATUS[o.status])o.status='active';
+      o.price=Math.max(0,parseFloat(o.price)||0);if(!SET.fx[o.currency])o.currency=SET.baseCurrency;
+      if(!okDate(o.nextPayment))o.nextPayment=addDays(today(),30);['startDate','minTermEnd','trialEnds','lastUsed'].forEach(k=>{if(o[k]&&!okDate(o[k]))o[k]='';});
+      o.noticeValue=Math.max(0,parseFloat(o.noticeValue)||0);if(!['days','weeks','months'].includes(o.noticeUnit))o.noticeUnit='days';
+      o.renewalMonths=o.renewalMonths==null||o.renewalMonths===''?null:(parseInt(o.renewalMonths)||null);
+      o.priceHistory=(Array.isArray(o.priceHistory)?o.priceHistory:[]).filter(h=>h&&okDate(h.date)&&parseFloat(h.price)>=0).map(h=>({date:h.date,price:parseFloat(h.price)}));
+      if(!o.cancellation||typeof o.cancellation!=='object')o.cancellation={status:'none'};
+      if(JSON.stringify(o)!==before){await save(o);n++;}}
+    if(!SET.fx[SET.baseCurrency])SET.baseCurrency='EUR';if(!Array.isArray(SET.notify.deadlines)||!SET.notify.deadlines.length)SET.notify.deadlines=[30,14,7,1];await saveSettings();
+    toast(n?`Fixed ${n} subscription${n>1?'s':''}.`:'Everything looked fine.');go('dashboard');},
+  usednow:async d=>{const o=clone(findItem(d.id));o.lastUsed=today();if(o.usage==='never')o.usage='sometimes';await save(o);toast('Marked '+o.name+' as used today');if($('#drawer').classList.contains('open'))openItem(o.id);},
+  grid:d=>openGridModal(d.scope),
+  gridadd:()=>gridAdd(),
+  subview:d=>{UI.subView=d.v;render();},
+  histedit:d=>histEditorSafe(d.id),
+  delitem:d=>{const i=findItem(d.id);confirmBox('Delete '+i.name+'?','This removes the subscription and its reminders. Linked documents stay in the contract reader.','Delete',async()=>{closeDrawer();await removeObj(i);toast('Deleted');});},
+  usage:async d=>{const i=clone(findItem(d.id));i.usage=d.u;await save(i);openItem(i.id);},
+  pricechange:d=>priceChangeForm(d.id),
+  startcancel:d=>openCancel(d.id),
+  clearf:()=>{UI.q='';UI.cat='';UI.status='';render();},
+  calnav:d=>{const cur=UI.calMonth||today().slice(0,7);UI.calMonth=d.d==='0'?null:addMonths(cur+'-01',+d.d).slice(0,7);render();},
+  copyics:async()=>{try{await navigator.clipboard.writeText(buildICS());toast('Calendar data copied. Save it as subwise.ics and open it.');}catch(e){openModal('Calendar file',`<textarea rows="12" class="mono" readonly>${esc(buildICS())}</textarea>`,'');}},
+  digest:async()=>{try{await navigator.clipboard.writeText(digestText());toast('Summary copied. Paste it into an email.');}catch(e){openModal('Summary',`<textarea rows="14" readonly>${esc(digestText())}</textarea>`,'');}},
+  dismiss:async d=>{SET.dismissed=Object.assign({},SET.dismissed,{[d.key]:today()});await saveSettings();},
+  undismiss:async d=>{const x=Object.assign({},SET.dismissed);delete x[d.key];SET.dismissed=x;await saveSettings();},
+  savenotify:async()=>{const dl=$('#n_dl').value.split(/[,\s]+/).map(Number).filter(n=>n>0&&n<=180);SET.notify={payments:+$('#n_pay').value||0,trials:+$('#n_trial').value||0,renewals:+$('#n_ren').value||0,deadlines:dl.length?dl:[30,14,7,1],priceIncrease:$('#n_price').checked,unusedDays:Math.max(7,+$('#n_unused').value||45)};await saveSettings();toast('Reminder settings saved');},
+  opendoc:d=>{UI.docId=d.id;UI.docTab='summary';closeDrawer();if(route()!=='reader')go('reader');else render();},
+  doctab:d=>{UI.docTab=d.t;render();},
+  analyze:d=>analyzeDoc(d.id),
+  asksugg:d=>askDoc(UI.docId,d.q),
+  linkdoc:d=>linkDocForm(d.id),
+  deldoc:d=>{const doc=DOCS.find(x=>x.id===d.id);confirmBox('Delete '+doc.name+'?','The document and its summary will be removed.','Delete',async()=>{if(doc.assetId&&ASSETS){try{await ASSETS.delete(doc.assetId);}catch(e){}}await removeObj(doc);UI.docId=null;toast('Document deleted');});},
+  saveprofile:async()=>{SET.profile=Object.assign({},SET.profile,{name:$('#s_name').value.trim(),address:$('#s_addr').value.trim()});SET.country=$('#s_country').value;await saveSettings();toast('Saved');},
+  savefx:async()=>{const fx={};Object.keys(SET.fx).forEach(c=>{const v=+$('#fx_'+c).value;fx[c]=c==='EUR'?1:(v>0?v:SET.fx[c]);});SET.fx=fx;SET.baseCurrency=$('#s_base').value;await saveSettings();toast('Currencies saved');},
+  exportjson:()=>saveFile('subwise-backup-'+today()+'.json',JSON.stringify({app:'Subwise',exportedAt:new Date().toISOString(),items:ITEMS,docs:DOCS,letters:LETTERS,settings:SET},null,1)),
+  exportcsv:()=>saveFile('subwise-subscriptions-'+today()+'.csv','﻿'+csvText()),
+  copycsv:async()=>{try{await navigator.clipboard.writeText(csvText());toast('Copied');}catch(e){}},
+  wipe:()=>confirmBox('Delete all your data?','Every subscription, document, letter and setting will be removed. This can\u2019t be undone.','Delete everything',async()=>{
+    if(MODE==='cloud'){for(const o of [...ITEMS,...DOCS,...LETTERS]){try{await COL.doc(o.id).delete();}catch(e){}}SET=Object.assign(defaultSettings(),{started:true});await saveSettings();}
+    else{try{localStorage.removeItem(LS_KEY);}catch(e){}}ITEMS=[];DOCS=[];LETTERS=[];if(MODE!=='cloud'){MODE='local';SET=Object.assign(defaultSettings(),{started:true});lsSet();}render();toast('All data deleted');})
+};
+document.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;const fn=ACT[a.dataset.act];if(!fn)return;
+  if(a.tagName==='A'&&a.getAttribute('href')==='#')e.preventDefault();if(a.tagName==='A'&&a.dataset.act==='startcancel')e.preventDefault();
+  if(a.closest('.side')&&window.innerWidth<900)$('#side').classList.remove('show');e.stopPropagation();fn(a.dataset,a,e);});
+document.addEventListener('click',e=>{const g=e.target.closest('a[data-go],a[href^="#"]:not([data-act])');if(!g)return;const r=g.dataset.go||g.getAttribute('href').slice(1);
+  if(!ROUTES.some(x=>x[0]===r))return;e.preventDefault();if(window.innerWidth<900)$('#side').classList.remove('show');go(r);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#modals').children.length)closeModal();else closeDrawer();}});
+init();
+
+</script>
+</body>
+</html>
